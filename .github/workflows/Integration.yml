@@ -17,25 +17,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Set up environment variables from GitHub Secrets
-        run: |
-          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
-          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
-          echo "PORT=3002" >> .env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-          echo "LOG_LEVEL=info" >> .env
-          echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> .env
-          echo "IV=${{ secrets.IV }}" >> .env
-          echo "RESETURL=http://localhost:3000/recover-password?token=" >> .env
-          echo "USER_EMAIL=${{ secrets.USER_EMAIL }}" >> .env
-          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> .env
-          echo "REDIRECT_URI=http://localhost:3000/auth/callback" >> .env
-          echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
-          echo "DROPBOX_APPKEY=${{ secrets.DROPBOX_APPKEY }}" >> .env
-          echo "DROPBOX_SECRET=${{ secrets.DROPBOX_SECRET }}" >> .env
-          echo "DROPBOX_REDIRECT_URI=http://localhost:3000/dropbox/callback" >> .env
-
       - name: Install and build frontend
         run: |
           npm i
