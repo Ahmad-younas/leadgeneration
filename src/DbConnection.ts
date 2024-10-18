@@ -1,3 +1,12 @@
+// import { Sequelize } from "sequelize";
+//
+// const sequelize = new Sequelize("leadgenerationfrontend", "root", "root", {
+//   host: "localhost",
+//   dialect: "mysql",
+// });
+//
+// export default sequelize;
+
 import { Sequelize } from "sequelize-typescript";
 import { Month } from "./Model/Month";
 
