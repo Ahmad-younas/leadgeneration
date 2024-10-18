@@ -20,12 +20,12 @@ jobs:
       - name: Install node module
         run: |
           if [ ! -d "node_modules" ]; then
-            npm install --force
+            npm install 
           fi
       - name: Go into the leadgenerationfrontend folder and install node module
         run: |
           cd leadgenerationfrontend
-          npm install --legacy-peer-deps --force
+          npm install
       - name: Check if build folder is exist
         run: |
           if [ -d "build" ]; then
