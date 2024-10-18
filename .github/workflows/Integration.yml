@@ -20,12 +20,12 @@ jobs:
       - name: Install node module
         run: |
           if [ ! -d "node_modules" ]; then
-            npm install 
+            npm install --force
           fi
       - name: Go into the leadgenerationfrontend folder and install node module
         run: |
           cd leadgenerationfrontend
-          npm install
+          npm install  --force
       - name: Check if build folder is exist
         run: |
           if [ -d "build" ]; then
