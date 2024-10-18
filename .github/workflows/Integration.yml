@@ -22,13 +22,12 @@ jobs:
           if [ ! -d "node_modules" ]; then
             npm install --force
           fi
-      - name: Go into the leadgenerationfrontend folder
-        run: cd leadgenerationfrontend
-      - name: Install node module in Leadgenerationfrontend
-        run: npm install --force
-      - name: Check if build folder is exist
+      - name: Go into the leadgenerationfrontend folder and install node module
         run: |
           cd leadgenerationfrontend
+          npm install --legacy-peer-deps
+      - name: Check if build folder is exist
+        run: |
           if [ -d "build" ]; then
            rm -rf build
            echo "Existing build folder removed."
