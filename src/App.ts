@@ -13,7 +13,9 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "/leadgenerationfrontend/build")));
+app.use(
+  express.static(path.join(__dirname, "../leadgenerationfrontend/build")),
+);
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/", EmployeeRoutes);

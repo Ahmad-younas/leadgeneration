@@ -11,7 +11,7 @@ sequelize
   .catch((err) => {
     console.error("Unable to connect to the database:", err);
   });
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3002;
 console.log(port);
 Server.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
