@@ -20,10 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
 
       - name: Set up environment variables from GitHub Secrets
         run: |
@@ -45,6 +41,7 @@ jobs:
 
       - name: Install and build frontend
         run: |
+          npm i
           cd leadgenerationfrontend
           npm install
           npm run build
