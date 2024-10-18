@@ -18,13 +18,14 @@ app.use(
 );
 app.use(cors(corsOptions));
 app.use(express.json());
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    uptime: process.uptime(), // uptime in seconds
-    timestamp: new Date().toISOString(), // current timestamp
-  });
-});
+
+// app.get("/health", (req, res) => {
+//   res.status(200).json({
+//     status: "OK",
+//     uptime: process.uptime(), // uptime in seconds
+//     timestamp: new Date().toISOString(), // current timestamp
+//   });
+// });
 
 app.use("/api/", EmployeeRoutes);
 app.use("/api/", LoginRoutes);
