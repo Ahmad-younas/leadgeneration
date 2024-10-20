@@ -17,22 +17,3 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install node module
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm install --force
-          fi
-      - name: Go into the leadgenerationfrontend folder and install node module
-        run: |
-          cd leadgenerationfrontend
-          npm install --force
-      - name: Check if build folder is exist
-        run: |
-          if [ -d "build" ]; then
-           rm -rf build
-           echo "Existing build folder removed."
-          fi
-      - name: create new build
-        run: |
-          cd leadgenerationfrontend
-          npm run build
