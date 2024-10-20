@@ -25,7 +25,7 @@ jobs:
       - name: Go into the leadgenerationfrontend folder and install node module
         run: |
           cd leadgenerationfrontend
-          npm install  npm install --legacy-peer-deps
+          npm install --force
       - name: Check if build folder is exist
         run: |
           if [ -d "build" ]; then
