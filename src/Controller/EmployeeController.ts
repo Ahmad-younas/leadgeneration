@@ -6,6 +6,16 @@ import { Sequelize } from "sequelize-typescript";
 import { Op, WhereOptions } from "sequelize";
 import { google, sheets_v4 } from "googleapis";
 import { Dropbox } from "dropbox";
+import { createSpreadsheet } from "../utils/spreadSheetService";
+import dotenv from "dotenv";
+import { refreshGoogleTokens } from "../utils/checkAndRefreshToken";
+
+dotenv.config();
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID!,
+  process.env.GOOGLE_CLIENT_SECRET!,
+  process.env.REDIRECT_URI!, // Can be left null if not using redirection
+);
 
 interface GoogleTokens {
   access_token?: string;
@@ -38,8 +48,9 @@ async function appendToSheet(
   data: (string | number)[],
   tokens: GoogleTokens,
   spreadsheetId: string,
-): Promise<void> {
+): Promise<number> {
   Logger.info("Append to Sheet function called");
+
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials(tokens); // Use stored tokens
 
@@ -48,26 +59,87 @@ async function appendToSheet(
     auth: oauth2Client,
   });
 
-  // Replace with your actual spreadsheet ID
-  const range = "Sheet1!A1"; // Adjust range as needed
+  // Define the header
+  const headers = [
+    "Title",
+    "First Name",
+    "Last Name",
+    "Date of Birth",
+    "Email",
+    "Contact Number",
+    "Address",
+    "Postcode",
+    "Landlord Name",
+    "Landlord Contact Number",
+    "Landlord Email",
+    "Agent Name",
+    "Agent Contact Number",
+    "Agent Email",
+    "Heating Type",
+    "Property Type",
+    "EPC Rating",
+    "EPC Band",
+    "Water Type",
+    "Service Type",
+    "Assessment Date",
+    "Notes",
+    "Month",
+    "Year",
+    "Status",
+  ];
 
-  await sheets.spreadsheets.values.append({
+  // Range for the header (top row)
+  const headerRange = "Sheet1!A1:Y1"; // Adjust range based on the number of columns
+
+  // Step 1: Check if the header already exists
+  const existingHeaderResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range,
+    range: headerRange,
+  });
+
+  const existingHeader = existingHeaderResponse.data.values;
+
+  // Step 2: If no header exists, append the header
+  if (!existingHeader || existingHeader.length === 0) {
+    Logger.info("Header is missing. Appending the header.");
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: headerRange,
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [headers],
+      },
+    });
+
+    Logger.info("Header appended to the sheet.");
+  } else {
+    Logger.info("Header already exists. Skipping header append.");
+  }
+
+  // Step 3: Append the data below the header (after the header)
+  const dataRange = "Sheet1!A2"; // Assuming appending starts from row 2 onwards
+
+  const response = await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: dataRange,
     valueInputOption: "RAW",
     requestBody: {
-      values: [data],
+      values: [data], // Data to append
     },
   });
+  const patter = /A(\d+)/;
+  const match = response.data.updates?.updatedRange?.match(patter);
+  let rowNumber: string | null = match ? match[1] : null;
+  return rowNumber ? parseInt(rowNumber) : NaN;
 }
-
-// Function End
 
 //This function is used to Store the Jobs into the DB
 export const addLeads = async (req: CustomRequest, res: Response) => {
   Logger.info("Add Jobs function Triggered");
   const id = req.user?.id;
-  console.log("req", req);
+  const currentDate = new Date();
+  const monthIndex = currentDate.getMonth();
   const monthNames = [
     "January",
     "February",
@@ -82,8 +154,6 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
     "November",
     "December",
   ];
-  const currentDate = new Date();
-  const monthIndex = currentDate.getMonth();
   const {
     title,
     firstName,
@@ -106,60 +176,76 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
     assessmentDate,
     notes,
     user_id,
+    waterType,
+    epcBand,
   } = req.body;
   try {
-    // const employee = await Employee.findByPk(user_id);
-    // const googleToken = employee?.googleTokens;
-    // if (!employee || !employee.googleTokens) {
-    //   Logger.info("Employee or googleToken not found");
-    //   return res
-    //     .status(404)
-    //     .json({ error: "Employee not found or not authenticated" });
-    // }
-    //
-    // if (!googleToken) {
-    //   throw new Error("Google tokens are missing for the employee.");
-    // }
+    const employee = await Employee.findByPk(user_id);
+    const googleToken = employee?.dataValues.googleTokens;
+    if (!employee || !employee?.dataValues.googleTokens) {
+      Logger.info("Employee or googleToken not found");
+      return res
+        .status(404)
+        .json({ error: "Employee not authenticated with Google" });
+    }
+
+    if (!googleToken) {
+      throw new Error("Google tokens are missing for the employee.");
+    }
     // Check if the employee already has a spreadsheet
-    // let spreadsheetId = employee.spreadsheetId;
+    let spreadsheetId = employee.dataValues.spreadsheetId;
 
     // If the spreadsheet doesn't exist, create a new one
-    // if (!spreadsheetId) {
-    //   Logger.info("spreadSheet is empty");
-    //   spreadsheetId = await createSpreadsheet(googleToken);
-    //   employee.spreadsheetId = spreadsheetId; // Save the new spreadsheet ID to the employee record
-    //   await employee.save(); // Save the updated employee record
-    //   Logger.info("spreadSheet is created");
-    // }
-    // const googleTokens: GoogleTokens =
-    //   typeof employee.googleTokens === "string"
-    //     ? JSON.parse(employee.googleTokens)
-    //     : employee.googleTokens;
+    if (!spreadsheetId) {
+      Logger.info("spreadSheet is empty");
+      spreadsheetId = await createSpreadsheet(googleToken);
+      console.log("spreadsheetID", spreadsheetId);
+      await Employee.update(
+        { spreadsheetId },
+        { where: { id: employee.dataValues.id } },
+      ); // Save the updated employee record
+      Logger.info("spreadSheet is created");
+    }
+    let googleTokens: GoogleTokens =
+      typeof employee.dataValues.googleTokens === "string"
+        ? JSON.parse(employee.dataValues.googleTokens)
+        : employee.dataValues.googleTokens;
 
-    // const dataArray = [
-    //   title,
-    //   firstName,
-    //   lastName, // Combine first and last names
-    //   dateOfBirth,
-    //   email,
-    //   contactNumber,
-    //   address,
-    //   postcode,
-    //   landlordName,
-    //   landlordContactNumber,
-    //   landlordEmail,
-    //   agentName,
-    //   agentContactNumber,
-    //   agentEmail,
-    //   heatingType,
-    //   propertyType,
-    //   epcRating,
-    //   serviceType,
-    //   assessmentDate,
-    //   notes,
-    //   user_id,
-    // ];
-    //await appendToSheet(dataArray, googleTokens, spreadsheetId);
+    googleTokens = await refreshGoogleTokens(googleTokens);
+
+    const dataArray = [
+      title,
+      firstName,
+      lastName, // Combine first and last names
+      dateOfBirth,
+      email,
+      contactNumber,
+      address,
+      postcode,
+      landlordName,
+      landlordContactNumber,
+      landlordEmail,
+      agentName,
+      agentContactNumber,
+      agentEmail,
+      heatingType,
+      propertyType,
+      epcRating,
+      epcBand,
+      waterType,
+      serviceType,
+      assessmentDate,
+      notes,
+      monthNames[monthIndex],
+      new Date().getFullYear().toString(),
+      "Booked",
+    ];
+    const sheetRowNumber = await appendToSheet(
+      dataArray,
+      googleTokens,
+      spreadsheetId,
+    );
+    console.log("sheetRowNumber", sheetRowNumber);
     const newJob = await Job.create({
       title,
       firstName,
@@ -185,6 +271,9 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
       month: monthNames[monthIndex],
       year: new Date().getFullYear().toString(),
       status: "Booked",
+      rowNumber: sheetRowNumber,
+      waterType,
+      epcBand,
     });
 
     const user = await Employee.findByPk(id);
@@ -196,6 +285,7 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
     }
   } catch (err) {
     if (err instanceof Error) {
+      console.log("error", err);
       logger.error(err.message);
     }
     res.status(500).json({ message: "Error adding job", error: err });
@@ -206,7 +296,6 @@ export const getJobInfoOfEmployee = async (req: Request, res: Response) => {
   const limit = parseInt(req.query.limit as string) || 10;
   const offset = (page - 1) * limit;
   const { id } = req.params;
-  console.log("id", id);
   try {
     // Fetch users with associated employee jobs
     const usersWithJobs = await Job.findAll({
@@ -269,12 +358,13 @@ export const getJobInfoOfEmployeeWithPagination = async (
   const limit = parseInt(req.query.limit as string) || 10;
   const offset = (page - 1) * limit;
   const id = parseInt(req.query.id as string);
-  console.log("id", id);
   try {
     // Fetch users with associated employee jobs
     const usersWithJobs = await Job.findAll({
       attributes: [
+        "id",
         "title",
+        "user_id",
         "firstName",
         "lastName",
         "dateOfBirth",
@@ -327,17 +417,11 @@ export const getIndividualEmployeeWithJobInfo = async (
   res: Response,
 ) => {
   const { employeeJobId, employeeId } = req.body;
-  console.log("employeeJobId", employeeJobId);
-  console.log("employeeId", employeeId);
   try {
     // Fetch users with associated employee jobs
     const employeeInfo = await Employee.findByPk(employeeId);
-    console.log("employeeInfo", employeeInfo);
-
     // Fetch the employee job information using employeeJobId
     const employeeJobInfo = await Job.findByPk(employeeJobId);
-    console.log("employeeJobInfo", employeeJobInfo);
-
     // Check if both employeeInfo and employeeJobInfo exist
     if (!employeeInfo || !employeeJobInfo) {
       return res.status(404).json({
@@ -362,7 +446,6 @@ export const getMonthlyJobCountOfEmployee = async (
 ) => {
   // Extract the userId and year from the request query parameters
   const id = parseInt(req.query.id as string);
-  console.log("id", id);
 
   try {
     // Ensure userId and year are provided and valid
@@ -497,5 +580,45 @@ export const createDropboxFolder = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error creating Dropbox folder:", error);
     res.status(500).json({ error: "Failed to create Dropbox folder" });
+  }
+};
+
+export const getJobStatusById = async (req: CustomRequest, res: Response) => {
+  const id = req.user?.id;
+  try {
+    const usersWithJobs = await Job.findAll({
+      attributes: [
+        "id",
+        "title",
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "email",
+        "contactNumber",
+        "address",
+        "postcode",
+        "landlordName",
+        "landlordContactNumber",
+        "landlordEmail",
+        "heatingType",
+        "propertyType",
+        "epcRating",
+        "serviceType",
+        "assessmentDate",
+        "notes",
+        "status",
+        "job_creation_date",
+      ],
+      where: {
+        user_id: id, // Replace '1' with the actual user ID you are filtering by
+      },
+    });
+    res.status(200).json({ usersWithJobs });
+  } catch (error) {
+    console.error("Error fetching employee with job info:", error);
+    res.status(500).json({
+      message: "Failed to fetch employee with job information",
+      error: error,
+    });
   }
 };

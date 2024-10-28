@@ -6,6 +6,7 @@ import {
   getIndividualEmployeeWithJobInfo,
   getJobInfoOfEmployee,
   getJobInfoOfEmployeeWithPagination,
+  getJobStatusById,
   getLeads,
   getMonthlyJobCountOfEmployee,
   getStatusCountOfJobs,
@@ -44,5 +45,12 @@ router.get(
   authorizeRole("employee"),
 );
 router.get("/getEmployeeJobs", getEmployeeJobs, authorizeRole("employee"));
+
+router.get(
+  "/getJobStatusById",
+  authenticateJWT,
+  getJobStatusById,
+  authorizeRole("employee"),
+);
 
 export default router;

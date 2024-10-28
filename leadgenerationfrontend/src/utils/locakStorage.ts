@@ -21,7 +21,8 @@ const decryptState = (encryptedState: string) => {
     const bytes = CryptoJS.AES.decrypt(
       encryptedState,
       process.env.SECRET_KEY ||
-      "'k;!q\'`)I@5\'V7E6UMiziF_*y?Jq(Z8c#C1+^oUe_Gnhj4K=1sZWNlW0d;4>AsWB',    );
+        "k;!q'`)I@5'V7E6UMiziF_*y?Jq(Z8c#C1+^oUe_Gnhj4K=1sZWNlW0d;4>AsWB"
+    );
     const decryptedState = bytes.toString(CryptoJS.enc.Utf8);
     return JSON.parse(decryptedState);
   } catch (err) {

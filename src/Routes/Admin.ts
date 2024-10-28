@@ -9,6 +9,7 @@ import {
   findAllEmployee,
   getEmployeeById,
   getEmployeeInfoAndEmployeeJobInfo,
+  getEmployeeJobInfo,
   getEmployeeWithJobInfo,
   getJobs,
   getMonthlyJobCounts,
@@ -55,4 +56,5 @@ router.post("/deleteSelectedJobs", deleteSelectedJobs);
 router.put("/updateEmployeeJob", authenticateJWT, updateEmployeeJob);
 router.post("/deleteAllJobs", authenticateJWT, deleteAllJobs);
 router.get("/getEmployeeById", authenticateJWT, getEmployeeById);
+router.get("/getEmployeeJobInfo/:id", authenticateJWT, getEmployeeJobInfo);
 export default router;

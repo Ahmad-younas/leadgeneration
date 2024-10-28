@@ -6,6 +6,18 @@ import Job from "../Model/Job";
 import { decryptPassword, encryptedPassword } from "../Middleware/auth";
 import { Month } from "../Model/Month";
 import { Sequelize } from "sequelize-typescript";
+import { getSpreadSheetIdAndRowNumber } from "../utils/getSpreadSheetIdAndRowNumber";
+import { createSpreadsheet } from "../utils/spreadSheetService";
+import { refreshGoogleTokens } from "../utils/checkAndRefreshToken";
+import { updateRowInSheet } from "../utils/updateRowInSheet";
+
+interface GoogleTokens {
+  access_token?: string;
+  refresh_token?: string;
+  scope?: string;
+  token_type?: string;
+  expiry_date?: number;
+}
 
 interface User {
   role: string;
@@ -139,6 +151,7 @@ export const findAllEmployee = async (req: Request, res: Response) => {
     });
   } catch (err) {
     if (err instanceof Error) {
+      console.log("err", err);
       logger.error(err.message);
     }
     res.status(500).json({ message: "Error finding employee", err });
@@ -210,12 +223,15 @@ export const getEmployeeInfoAndEmployeeJobInfo = async (
   res: Response,
 ) => {
   const { employeeJobId, employeeId } = req.body;
+  console.log("employeeJobid", employeeJobId);
+  console.log("employeeId", employeeId);
   try {
     // Fetch the employee information using employeeId
     const employeeInfo = await Employee.findByPk(employeeId);
-
+    console.log("EmployeeInfo", employeeInfo);
     // Fetch the employee job information using employeeJobId
     const employeeJobInfo = await Job.findByPk(employeeJobId);
+    console.log("EmployeeJobInfo", employeeJobInfo);
     if (!employeeInfo || !employeeJobInfo) {
       return res.status(404).json({
         message: "Employee or Employee Job not found",
@@ -334,39 +350,124 @@ export const deleteSelectedJobs = async (req: Request, res: Response) => {
  * @param {Response} res - Express response object.
  */
 export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
-  const { id } = req.body;
+  const {
+    id,
+    title,
+    firstName,
+    lastName,
+    dateOfBirth,
+    email,
+    contactNumber,
+    address,
+    postcode,
+    landlordName,
+    landlordContactNumber,
+    landlordEmail,
+    agentName,
+    agentContactNumber,
+    agentEmail,
+    heatingType,
+    propertyType,
+    epcRating,
+    serviceType,
+    assessmentDate,
+    notes,
+    month,
+    year,
+    epcBand,
+    waterType,
+  } = req.body;
+  const userId = req.user?.id;
+  const dataToUpdate = [
+    title,
+    firstName,
+    lastName,
+    dateOfBirth,
+    email,
+    contactNumber,
+    address,
+    postcode,
+    landlordName,
+    landlordContactNumber,
+    landlordEmail,
+    agentName,
+    agentContactNumber,
+    agentEmail,
+    heatingType,
+    propertyType,
+    epcRating,
+    serviceType,
+    assessmentDate,
+    notes,
+    epcBand,
+    waterType,
+  ];
   try {
     const job = await Job.update(
       {
-        title: req.body.title,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        dateOfBirth: req.body.dateOfBirth,
-        email: req.body.email,
-        contactNumber: req.body.contactNumber,
-        address: req.body.address,
-        postcode: req.body.postcode,
-        landlordName: req.body.landlordName,
-        landlordContactNumber: req.body.landlordContactNumber,
-        landlordEmail: req.body.landlordEmail,
-        agentName: req.body.agentName,
-        agentContactNumber: req.body.agentContactNumber,
-        agentEmail: req.body.agentEmail,
-        heatingType: req.body.heatingType,
-        propertyType: req.body.propertyType,
-        epcRating: req.body.epcRating,
-        serviceType: req.body.serviceType,
-        assessmentDate: req.body.assessmentDate,
-        notes: req.body.notes,
-        month: req.body.month,
-        year: req.body.year,
-        status: req.body.status,
+        title,
+        firstName,
+        lastName,
+        dateOfBirth,
+        email,
+        contactNumber,
+        address,
+        postcode,
+        landlordName,
+        landlordContactNumber,
+        landlordEmail,
+        agentName,
+        agentContactNumber,
+        agentEmail,
+        heatingType,
+        propertyType,
+        epcRating,
+        serviceType,
+        assessmentDate,
+        notes,
+        month,
+        year,
+        status:
+          req.body.status && req.body.status.trim() != ""
+            ? req.body.status
+            : "Booked",
+        epcBand,
+        waterType,
       },
       {
         where: {
           id: id,
         },
       },
+    );
+    const response = await getSpreadSheetIdAndRowNumber(id, userId);
+    if (!response || !response.googleTokens) {
+      Logger.info("Employee or googleToken not found");
+      return res
+        .status(404)
+        .json({ error: "Employee not authenticated with Google" });
+    }
+
+    let spreadsheetId = response.spreadSheetId;
+    if (!spreadsheetId) {
+      Logger.info("spreadSheet is empty");
+      spreadsheetId = await createSpreadsheet(response.googleTokens);
+      console.log("spreadsheetID", spreadsheetId);
+      await Employee.update({ spreadsheetId }, { where: { id: id } }); // Save the updated employee record
+      Logger.info("spreadSheet is created");
+    }
+
+    let googleTokens: GoogleTokens =
+      typeof response.googleTokens === "string"
+        ? JSON.parse(response.googleTokens)
+        : response.googleTokens;
+
+    googleTokens = await refreshGoogleTokens(googleTokens);
+    const responseOfUpdateRowInSheet = await updateRowInSheet(
+      dataToUpdate,
+      googleTokens,
+      response.spreadSheetId,
+      response.rowNumber,
     );
     return res.status(200).json({
       message: "Employee job updated successfully",
@@ -433,5 +534,19 @@ export const getEmployeeById = async (req: CustomRequest, res: Response) => {
   } catch (error) {
     console.error("Error fetching employee:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getEmployeeJobInfo = async (req: Request, res: Response) => {
+  const jobId = req.params.id;
+  console.log("jobId", jobId);
+  try {
+    const job = await Job.findByPk(jobId);
+    if (!job) {
+      return res.status(404).json({ error: "Job not found" });
+    }
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching job details" });
   }
 };
