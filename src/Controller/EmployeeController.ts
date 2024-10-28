@@ -51,7 +51,6 @@ async function appendToSheet(
 ): Promise<number> {
   Logger.info("Append to Sheet function called");
 
-  const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials(tokens); // Use stored tokens
 
   const sheets: sheets_v4.Sheets = google.sheets({
@@ -130,7 +129,7 @@ async function appendToSheet(
   });
   const patter = /A(\d+)/;
   const match = response.data.updates?.updatedRange?.match(patter);
-  let rowNumber: string | null = match ? match[1] : null;
+  const rowNumber: string | null = match ? match[1] : null;
   return rowNumber ? parseInt(rowNumber) : NaN;
 }
 
@@ -246,7 +245,7 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
       spreadsheetId,
     );
     console.log("sheetRowNumber", sheetRowNumber);
-    const newJob = await Job.create({
+    await Job.create({
       title,
       firstName,
       lastName,

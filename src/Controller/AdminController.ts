@@ -403,7 +403,7 @@ export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
     waterType,
   ];
   try {
-    const job = await Job.update(
+    await Job.update(
       {
         title,
         firstName,
@@ -463,7 +463,7 @@ export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
         : response.googleTokens;
 
     googleTokens = await refreshGoogleTokens(googleTokens);
-    const responseOfUpdateRowInSheet = await updateRowInSheet(
+    await updateRowInSheet(
       dataToUpdate,
       googleTokens,
       response.spreadSheetId,

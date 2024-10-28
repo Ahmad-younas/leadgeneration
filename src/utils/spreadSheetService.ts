@@ -5,14 +5,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Define the type for the Google Tokens, assuming they are stored as JSON objects
-interface GoogleTokens {
-  access_token?: string;
-  refresh_token?: string;
-  scope?: string;
-  token_type?: string;
-}
-
 function parseTokens(tokens: string | Credentials): Credentials {
   Logger.info("ParseToken function called");
   if (typeof tokens === "string") {

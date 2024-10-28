@@ -79,9 +79,6 @@ export const oauth2Callback = async (
 
     Logger.info(`Tokens received: ${JSON.stringify(tokens)}`);
     oauth2Client.setCredentials(tokens);
-
-    const employeeId = (req.session as any).employeeId;
-    console.log("employeeId", employeeId);
     const tokensString = JSON.stringify(tokens);
     console.log("GOOGLE TOKEN:", tokensString);
     Logger.info(`GoogleToken: ${tokensString}`);

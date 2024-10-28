@@ -6,15 +6,6 @@ import { Employee } from "../Model/model";
 import Logger from "../logger"; // Step 1: Redirect user to Dropbox for authentication
 dotenv.config();
 
-interface AccessTokenResponse {
-  result: {
-    access_token: string;
-    token_type: string;
-    uid: string;
-    account_id: string;
-  };
-}
-
 // Step 1: Redirect user to Dropbox for authentication
 export const getDropboxAuthUrl = (req: Request, res: Response) => {
   Logger.info("getDropboxAuthUrl Triggered");
