@@ -11,10 +11,10 @@ const logger_1 = __importDefault(require("../logger"));
 const logger_2 = __importDefault(require("../logger")); // Adjust this import according to your logger setup
 // Nodemailer transport configuration
 const transporter = nodemailer_1.default.createTransport({
-  service: "Gmail", // e.g., 'Gmail', 'Yahoo', 'Outlook'
+  serv'Gmail'mail", // e.g., 'Gmail', 'Yahoo', 'Outlook'
   auth: {
-    user: "ahyounas2k22@gmail.com", // Your email address
-    pass: "zklqaankkxrrlonq", // Your email password or app-specific password
+    u'ahyounas2k22@gmail.com'.com", // Your email address
+    p'zklqaankkxrrlonq'lonq", // Your email password or app-specific password
   },
 });
 /**
@@ -24,22 +24,20 @@ const transporter = nodemailer_1.default.createTransport({
  * @returns {Promise<void>}
  */
 const sendResetPasswordEmail = async (to, token) => {
-  logger_2.default.info("sendResetPasswordEmail Triggered");
+  logger_2.default.info('sendResetPasswordEmail Triggered');
   try {
     const resetUrl = process.env.RESETURL + `${token}`; // Replace with your frontend URL
     const expirationMinutes = 2; // Token expiration time
     const currentDate = new Date();
-    const expirationDate = new Date(
-      currentDate.getTime() + expirationMinutes * 60000,
-    ); // Replace with your frontend URL
+    const expirationDate = new Date(currentDate.getTime() + expirationMinutes * 60000); // Replace with your frontend URL
     const expirationTimeFormatted = expirationDate.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
+      hour: '2-digit',
+      minute: '2-digit',
     });
     const mailOptions = {
-      from: "ahyounas2k22@gmail.com", // Sender address
+      from: 'ahyounas2k22@gmail.com', // Sender address
       to: to, // Recipient address
-      subject: "Password Reset Request",
+      subject: 'Password Reset Request',
       html: `
         <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
           <h2>Password Reset Request</h2>
@@ -64,10 +62,8 @@ const sendResetPasswordEmail = async (to, token) => {
     await transporter.sendMail(mailOptions);
     logger_1.default.info(`Password reset email sent to ${to}`);
   } catch (err) {
-    logger_1.default.error(
-      `Error sending password reset email to ${to}: ${err}`,
-    );
-    throw new Error("Failed to send password reset email");
+    logger_1.default.error(`Error sending password reset email to ${to}: ${err}`);
+    throw new Error('Failed to send password reset email');
   }
 };
 exports.sendResetPasswordEmail = sendResetPasswordEmail;

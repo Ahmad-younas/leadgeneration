@@ -14,20 +14,18 @@ const Login_1 = __importDefault(require("./Routes/Login"));
 const node_path_1 = __importDefault(require("node:path"));
 const app = (0, express_1.default)();
 const corsOptions = {
-  origin: "http://localhost:3000", // Replace with the origin of your Flutter app
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  ori'http://localhost:3000'3000", // Replace with the origin of your Flutter app
+  meth'GET,HEAD,PUT,PATCH,POST,DELETE'LETE",
   credentials: true,
 };
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 console.log("path=>", node_path_1.default.join(__dirname, "../build"));
-app.use(
-  express_1.default.static(node_path_1.default.join(__dirname, "../build")),
-);
+app.use(express_1.default.static(node_path_1.default.join(__dirname, '../build')));
 app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.get("/health", (req, res) => {
   res.status(200).json({
-    status: "OK",
+    status: 'OK',
     uptime: process.uptime(), // uptime in seconds
     timestamp: new Date().toISOString(), // current timestamp
   });

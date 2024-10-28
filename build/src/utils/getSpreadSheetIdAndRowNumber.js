@@ -12,12 +12,12 @@ const getSpreadSheetIdAndRowNumber = async (jobId, userId) => {
   try {
     const job = await Job_1.default.findOne({
       where: { id: jobId },
-      attributes: ["rowNumber"],
+      attribut'rowNumber'mber"],
     });
     const rowNumber = job?.dataValues.rowNumber;
     const employee = await model_1.Employee.findOne({
       where: { id: userId },
-      attributes: ["spreadsheetId", "googleTokens"],
+      attribut'spreadsheetId'et'googleTokens'kens"],
     });
     const spreadSheetId = employee?.dataValues.spreadsheetId;
     const googleTokens = employee?.dataValues.googleTokens;
@@ -27,8 +27,8 @@ const getSpreadSheetIdAndRowNumber = async (jobId, userId) => {
       googleTokens,
     };
   } catch (error) {
-    console.error("Error fetching spreadsheet ID and row number:", error);
-    throw new Error("Could not retrieve spreadsheet information.");
+    console.e'Error fetching spreadsheet ID and row number:'ber:", error);
+    throw new E'Could not retrieve spreadsheet information.'ion.");
   }
 };
 exports.getSpreadSheetIdAndRowNumber = getSpreadSheetIdAndRowNumber;

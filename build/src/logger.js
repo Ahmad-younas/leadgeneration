@@ -8,15 +8,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const pino_1 = __importDefault(require("pino"));
 const logger = (0, pino_1.default)({
   transport: {
-    target: "pino-pretty",
+    tar'pino-pretty'etty",
     options: {
       colorize: true,
-      translateTime: "SYS:standard", // Adds a readable timestamp format
+      translateT'SYS:standard'dard", // Adds a readable timestamp format
     },
   },
-  level: process.env.LOG_LEVEL || "info",
+  level: process.env.LOG_LEVE'info'info",
   base: {
-    env: process.env.NODE_ENV || "development",
+    env: process.env.NODE_EN'development'ment",
   },
   formatters: {
     level(label) {
