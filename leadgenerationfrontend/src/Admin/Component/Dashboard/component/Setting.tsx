@@ -1,5 +1,5 @@
 import { Header } from '../../../../Components/Sidebar/Header';
-import React, {useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -30,19 +30,47 @@ export const Setting = () => {
         <UnorderedList styleType="'-'">
           <List spacing={3}>
             <ListItem display={'flex'} justifyContent={'space-between'}>
-              <Heading as='h5' size='sm'>
+              <Heading as="h5" size="sm">
                 Edit your Profile
               </Heading>
-              <Button leftIcon={<EditIcon/>} onClick={()=>{setIsOpenModel(true)}}  colorScheme='teal' variant='outline' size='sm' ml={4}>
+              <Button
+                leftIcon={<EditIcon />}
+                onClick={() => {
+                  setIsOpenModel(true);
+                }}
+                colorScheme="teal"
+                size="sm"
+                ml={4}
+              >
                 Edit
               </Button>
             </ListItem>
             <ListItem display={'flex'} justifyContent={'space-between'}>
-              <Heading as='h5' size='sm'>
+              <Heading as="h5" size="sm">
                 Logout from Profile
               </Heading>
-              <Button leftIcon={<LogoutIcon />} onClick={()=>dispatch(logout())} colorScheme="red" variant='outline' size="sm" ml={4}>
+              <Button
+                leftIcon={<LogoutIcon />}
+                onClick={() => dispatch(logout())}
+                colorScheme="teal"
+                size="sm"
+                ml={4}
+              >
                 Logout
+              </Button>
+            </ListItem>
+            <ListItem display={'flex'} justifyContent={'space-between'}>
+              <Heading as="h5" size="sm">
+                Authenticate with dropbox
+              </Heading>
+              <Button
+                leftIcon={<LogoutIcon />}
+                onClick={() => dispatch(logout())}
+                colorScheme="teal"
+                size="sm"
+                ml={4}
+              >
+                Authenticate
               </Button>
             </ListItem>
           </List>

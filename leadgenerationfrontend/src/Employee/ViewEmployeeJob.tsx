@@ -1,30 +1,37 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalCloseButton,
-  ModalBody,
   Box,
-  FormControl,
   Button,
-  ModalFooter,
+  FormControl,
   FormLabel,
-  Input,
   Heading,
-  Stack,
-  Spacer,
+  Input,
   InputGroup,
-  InputLeftElement, InputLeftAddon, Textarea,
+  InputLeftAddon,
+  InputLeftElement,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalOverlay,
+  Spacer,
+  Stack,
+  Textarea,
 } from '@chakra-ui/react';
 import React, { useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAddressBook, faCalendarDays, faStarHalfStroke, faUser } from '@fortawesome/free-solid-svg-icons';
+import {
+  faAddressBook,
+  faCalendarDays,
+  faStarHalfStroke,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
 import { EmailIcon } from '@chakra-ui/icons';
 
 interface FormData {
-  username:string,
-  role:string,
-  userEmail:string,
+  username: string;
+  role: string;
+  userEmail: string;
   title: string;
   firstName: string;
   lastName: string;
@@ -47,17 +54,22 @@ interface FormData {
   notes: string;
   month: string;
   year: string;
-  status:string;
+  status: string;
+  epcBand: string;
+  waterType: string;
 }
 
 interface AuthModalProps {
   isOpenModel: boolean;
   onCloseModel: () => void;
-  data: FormData
+  data: FormData;
 }
 
-
-export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onCloseModel, data }) => {
+export const ViewEmployeeJob: React.FC<AuthModalProps> = ({
+  isOpenModel,
+  onCloseModel,
+  data,
+}) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLInputElement>(null);
 
@@ -69,10 +81,10 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
       onClose={onCloseModel}
     >
       <ModalOverlay />
-      <ModalContent maxWidth={"70%"}>
+      <ModalContent maxWidth={'70%'}>
         <ModalCloseButton />
         <ModalBody pb={6}>
-          <Box display='flex' justifyContent='center'>
+          <Box display="flex" justifyContent="center">
             <form>
               <Box
                 style={{
@@ -81,7 +93,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
               >
                 <Heading
                   pt={'4'}
-                  fontSize={"x-large"}
+                  fontSize={'x-large'}
                   display={'flex'}
                   justifyContent={'center'}
                   alignItems={'center'}
@@ -98,10 +110,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     <Stack spacing={4}>
                       <FormControl>
                         <FormLabel htmlFor="title">Title</FormLabel>
-                        <Input
-                          defaultValue={data.title}
-                          isReadOnly={true}
-                        />
+                        <Input defaultValue={data.title} isReadOnly={true} />
                         <Spacer />
                       </FormControl>
                       <FormControl>
@@ -116,7 +125,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="lastName">Last Name</FormLabel>
                         <InputGroup>
                           <InputLeftElement>
@@ -128,8 +137,10 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
-                        <FormLabel htmlFor="dateOfBirth">Date of Birth</FormLabel>
+                      <FormControl>
+                        <FormLabel htmlFor="dateOfBirth">
+                          Date of Birth
+                        </FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
                             <FontAwesomeIcon
@@ -143,7 +154,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="email">Email</FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
@@ -155,7 +166,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="contactNumber">
                           Contact Number
                         </FormLabel>
@@ -167,7 +178,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="address">Address</FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
@@ -186,15 +197,12 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                   </Box>
                   <Box w={'100%'} bg={'white'} p={'15px'} m={'15px'}>
                     <Stack spacing={4}>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="postcode">Postcode</FormLabel>
 
-                        <Input
-                          defaultValue={data.postcode}
-                          isReadOnly={true}
-                        />
+                        <Input defaultValue={data.postcode} isReadOnly={true} />
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="landlordName">
                           Landlord Name
                         </FormLabel>
@@ -208,7 +216,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="landlordContactNumber">
                           Landlord Contact Number
                         </FormLabel>
@@ -220,7 +228,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="landlordEmail">
                           Landlord Email
                         </FormLabel>
@@ -234,7 +242,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="agentName">Agent Name</FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
@@ -246,7 +254,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="agentContactNumber">
                           Agent Contact Number
                         </FormLabel>
@@ -258,7 +266,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           />
                         </InputGroup>
                       </FormControl>
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="agentEmail">Agent Email</FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
@@ -273,7 +281,9 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     </Stack>
                   </Box>
                 </Box>
-                <Box style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
                   <Box
                     style={{
                       backgroundColor: 'white',
@@ -284,17 +294,20 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     }}
                   >
                     <Stack spacing={4}>
-                      <Heading pt={'4'}
-                               fontSize={"x-large"} >Property Details Section</Heading>
-                      <FormControl >
-                        <FormLabel htmlFor="heatingType">Heating Type</FormLabel>
+                      <Heading pt={'4'} fontSize={'x-large'}>
+                        Property Details Section
+                      </Heading>
+                      <FormControl>
+                        <FormLabel htmlFor="heatingType">
+                          Heating Type
+                        </FormLabel>
                         <Input
                           defaultValue={data.heatingType}
                           isReadOnly={true}
                         />
                       </FormControl>
 
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="propertyType">
                           Property Type
                         </FormLabel>
@@ -302,12 +315,11 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                           defaultValue={data.propertyType}
                           isReadOnly={true}
                         />
-
                       </FormControl>
 
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="epcRating">
-                          Current EPC Rating
+                          Current EPC Band
                         </FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
@@ -317,7 +329,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                             />
                           </InputLeftElement>
                           <Input
-                            defaultValue={data.epcRating}
+                            defaultValue={data.epcBand}
                             isReadOnly={true}
                           />
                         </InputGroup>
@@ -334,17 +346,20 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     }}
                   >
                     <Stack spacing={4}>
-                      <Heading pt={'4'}
-                               fontSize={"x-large"}>Measures Details</Heading>
-                      <FormControl >
-                        <FormLabel htmlFor="serviceType">Service Type</FormLabel>
+                      <Heading pt={'4'} fontSize={'x-large'}>
+                        Measures Details
+                      </Heading>
+                      <FormControl>
+                        <FormLabel htmlFor="serviceType">
+                          Service Type
+                        </FormLabel>
                         <Input
                           defaultValue={data.serviceType}
                           isReadOnly={true}
                         />
                       </FormControl>
 
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="assessmentBirth">
                           Retrofit Assessment Date
                         </FormLabel>
@@ -362,7 +377,7 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                         </InputGroup>
                       </FormControl>
 
-                      <FormControl >
+                      <FormControl>
                         <FormLabel htmlFor="note">Note</FormLabel>
                         <Textarea
                           id="note"
@@ -382,12 +397,13 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     }}
                   >
                     <Stack spacing={4}>
-                      <Heading pt={'4'}
-                               fontSize={"x-large"}>Job Status</Heading>
-                      <FormControl >
+                      <Heading pt={'4'} fontSize={'x-large'}>
+                        Job Status
+                      </Heading>
+                      <FormControl>
                         <FormLabel htmlFor="serviceType">Status</FormLabel>
                         <Input
-                          id={"status"}
+                          id={'status'}
                           defaultValue={data.status}
                           isReadOnly={true}
                         />
@@ -395,8 +411,51 @@ export const ViewEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     </Stack>
                   </Box>
                 </Box>
+                <Box
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
+                  <Box
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    <Box
+                      style={{
+                        backgroundColor: 'white',
+                        borderRadius: '15px',
+                        width: '100%',
+                        padding: '15px',
+                        margin: '15px 10px 10px 0px',
+                      }}
+                    >
+                      <Stack spacing={4}>
+                        <Heading fontSize={'x-large'}>
+                          Water Heating Type
+                        </Heading>
+                        <FormControl>
+                          <FormLabel htmlFor="waterType">Water Type</FormLabel>
+                          <Input
+                            defaultValue={data.waterType}
+                            isReadOnly={true}
+                          />
+                        </FormControl>
+                        <Heading fontSize={'x-large'}>
+                          Current EPC Rating
+                        </Heading>
+                        <FormControl>
+                          <FormLabel htmlFor={'Current EPC Rating'}>
+                            <Input
+                              defaultValue={data.epcRating}
+                              isReadOnly={true}
+                            />
+                          </FormLabel>
+                        </FormControl>
+                      </Stack>
+                    </Box>
+                  </Box>
+                </Box>
                 <ModalFooter>
-                  <Button colorScheme='teal' size='lg' onClick={onCloseModel}>Close</Button>
+                  <Button colorScheme="teal" size="lg" onClick={onCloseModel}>
+                    Close
+                  </Button>
                 </ModalFooter>
               </Box>
             </form>

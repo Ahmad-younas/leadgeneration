@@ -21,6 +21,7 @@ export const getAuthUrl = (req: Request, res: Response) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline", // Required to get a refresh token
     scope: ["https://www.googleapis.com/auth/spreadsheets"], // Only Google Sheets API scope
+    prompt: "consent",
     redirect_uri: process.env.REDIRECT_URI,
     client_id: process.env.GOOGLE_CLIENT_ID,
   });

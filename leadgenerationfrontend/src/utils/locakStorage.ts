@@ -1,11 +1,14 @@
 import CryptoJS from 'crypto-js';
-import { RootState } from 'redux/store';
-// Function to encrypt the state
+
 const encryptState = (state: any) => {
-  console.log("secret key: ", process.env.SECRET_KEY);
+  console.log('secret key: ', process.env.SECRET_KEY);
   try {
     const serializedState = JSON.stringify(state);
-    return CryptoJS.AES.encrypt(serializedState, process.env.SECRET_KEY || "k;!q'`)I@5'V7E6UMiziF_*y?Jq(Z8c#C1+^oUe_Gnhj4K=1sZWNlW0d;4>AsWB").toString();
+    return CryptoJS.AES.encrypt(
+      serializedState,
+      process.env.SECRET_KEY ||
+        "k;!q'`)I@5'V7E6UMiziF_*y?Jq(Z8c#C1+^oUe_Gnhj4K=1sZWNlW0d;4>AsWB"
+    ).toString();
   } catch (err) {
     console.error('Could not encrypt state', err);
     return null;
@@ -15,7 +18,10 @@ const encryptState = (state: any) => {
 // Function to decrypt the state
 const decryptState = (encryptedState: string) => {
   try {
-    const bytes = CryptoJS.AES.decrypt(encryptedState, process.env.SECRET_KEY || "k;!q'`)I@5'V7E6UMiziF_*y?Jq(Z8c#C1+^oUe_Gnhj4K=1sZWNlW0d;4>AsWB");
+    const bytes = CryptoJS.AES.decrypt(
+      encryptedState,
+      process.env.SECRET_KEY ||
+      "'k;!q\'`)I@5\'V7E6UMiziF_*y?Jq(Z8c#C1+^oUe_Gnhj4K=1sZWNlW0d;4>AsWB',    );
     const decryptedState = bytes.toString(CryptoJS.enc.Utf8);
     return JSON.parse(decryptedState);
   } catch (err) {
@@ -35,7 +41,7 @@ export const saveState = (state: any) => {
   }
 };
 
-export const loadState = ()  => {
+export const loadState = () => {
   try {
     const encryptedState = localStorage.getItem('reduxState');
     if (encryptedState === null) {

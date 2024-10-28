@@ -1,7 +1,9 @@
-// spreadsheetService.ts
 import { google, sheets_v4 } from "googleapis";
 import { Credentials } from "google-auth-library";
 import Logger from "../logger";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Define the type for the Google Tokens, assuming they are stored as JSON objects
 interface GoogleTokens {
@@ -28,8 +30,13 @@ export async function createSpreadsheet(
   tokens: string | Credentials,
 ): Promise<string> {
   Logger.info("CreateSpreadSheet Function called ");
-  const oauth2Client = new google.auth.OAuth2();
+  console.log("Token", tokens);
+  const oauth2Client = new google.auth.OAuth2({
+    clientId: process.env.GOOGLE_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+  });
   const parsedTokens = parseTokens(tokens);
+  console.log("parsedTokens", parsedTokens);
   oauth2Client.setCredentials(parsedTokens); // Use stored tokens from OAuth2
 
   const sheets: sheets_v4.Sheets = google.sheets({

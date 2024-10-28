@@ -27,6 +27,9 @@ interface employeeJob {
   month: string;
   year: string;
   status: string;
+  rowNumber: number;
+  epcBand: string;
+  waterType: string;
 }
 
 interface employeeJobsAttribute extends Optional<employeeJob, "id"> {}
@@ -60,6 +63,9 @@ class Job
   public month!: string;
   public year!: string;
   public status!: string;
+  public rowNumber!: number;
+  public epcBand!: string;
+  public waterType!: string;
 }
 
 Job.init(
@@ -168,6 +174,18 @@ Job.init(
     },
     year: {
       type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    rowNumber: {
+      type: DataTypes.NUMBER,
+      allowNull: false,
+    },
+    epcBand: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    waterType: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },

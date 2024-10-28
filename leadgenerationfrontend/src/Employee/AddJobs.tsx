@@ -1,73 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { EmployeeNavbarLink } from './EmployeeNavbarLink';
+import React, { useEffect, useState } from 'react';
 import {
   getLastPathSegment,
   getSecondLastPathSegment,
 } from '../RoutePath/Path';
 import {
-  useColorModeValue,
   Box,
   Button,
   FormControl,
-  FormLabel,
   FormErrorMessage,
+  FormLabel,
+  Heading,
   Input,
-  Select,
-  Spinner,
-  Spacer,
   InputGroup,
   InputLeftAddon,
   InputLeftElement,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Select,
+  Spacer,
+  Spinner,
   Stack,
   Textarea,
-  Heading, useToast, Divider,
+  useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import { EmailIcon } from '@chakra-ui/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays } from '@fortawesome/free-solid-svg-icons';
-import { faAddressBook } from '@fortawesome/free-solid-svg-icons';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { faStarHalfStroke } from '@fortawesome/free-solid-svg-icons';
+import {
+  faAddressBook,
+  faCalendarDays,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
-import Logger from '../Logger';
 import { AdminNavbarLink } from '../Admin/Component/Dashboard/component/Table/AdminNavbarLink';
 
 const schema = yup.object().shape({
   title: yup.string(),
-  firstName: yup.string().required("First name is required"),
+  firstName: yup.string().required('First name is required'),
   lastName: yup.string(),
-  dateOfBirth: yup
-    .string(),
-  email: yup
-    .string()
-    .email('Invalid email address'),
+  dateOfBirth: yup.string(),
+  email: yup.string().email('Invalid email address'),
   contactNumber: yup.string(),
   address: yup.string(),
   postcode: yup.string(),
   landlordName: yup.string(),
-  landlordContactNumber: yup
-    .string(),
-  landlordEmail: yup
-    .string()
-    .email('Invalid email address'),
+  landlordContactNumber: yup.string(),
+  landlordEmail: yup.string().email('Invalid email address'),
   agentName: yup.string(),
   agentContactNumber: yup.string(),
-  agentEmail: yup
-    .string()
-    .email('Invalid email address'),
+  agentEmail: yup.string().email('Invalid email address'),
   heatingType: yup.string(),
   propertyType: yup.string(),
   epcRating: yup.string(),
   serviceType: yup.string(),
-  assessmentDate: yup
-    .string(),
+  assessmentDate: yup.string(),
   notes: yup.string(),
+  waterType: yup.string(),
+  epcBand: yup.string(),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -94,26 +92,31 @@ export const AddJobs: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
   const token = localStorage.getItem('authToken');
- const id = user?.id;
-  const onSubmit:  SubmitHandler<FormData> = async (data) => {
+  const id = user?.id;
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     const newData = {
-      user_id:id,
-      ...data
-    }
-    try{
+      user_id: id,
+      ...data,
+    };
+    console.log('newData', newData);
+    try {
       setLoading(true);
-      const response = await  axios.post('http://localhost:3002/api/add-job', newData, {
-        withCredentials:true,
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-        },
-      });
-      console.log("Response",response);
+      const response = await axios.post(
+        'http://localhost:3002/api/add-job',
+        newData,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      );
+      console.log('Response', response);
       if (response.status === 201) {
         toast({
           title: 'Job Status.',
@@ -125,31 +128,38 @@ export const AddJobs: React.FC = () => {
         });
         setLoading(false);
         reset();
-      }else if(response.status === 204){
+      } else if (response.status === 204) {
         setLoading(true);
         await initiateDropboxAuth();
         reset();
       }
-    }catch (error){
-      console.log("error",error);
+    } catch (error) {
+      console.log('error', error);
       if (axios.isAxiosError(error)) {
-        if(error?.response?.data.error ==="Employee not authenticated with Google"){
-          axios.get('http://localhost:3002/api/auth/google')
+        if (
+          error?.response?.data.error ===
+          'Employee not authenticated with Google'
+        ) {
+          axios
+            .get('http://localhost:3002/api/auth/google')
             .then((response) => {
               const { url } = response.data;
-              console.log("URL", url);
+              console.log('URL', url);
               window.location.href = url;
             })
             .catch((error) => {
               if (axios.isAxiosError(error)) {
-                console.error('Error generating authorization URL:', error.response?.data || error.message);
+                console.error(
+                  'Error generating authorization URL:',
+                  error.response?.data || error.message
+                );
               } else {
                 console.error('Unexpected error:', error);
               }
             });
         }
-        console.log("error",error?.response?.status);
-        console.log("error",error?.response?.data.error);
+        console.log('error', error?.response?.status);
+        console.log('error', error?.response?.data.error);
         toast({
           title: 'Job Status.',
           //description: error.response?.data.error.errors[0].message,
@@ -164,12 +174,13 @@ export const AddJobs: React.FC = () => {
         }
       }
     }
-
   };
   const initiateDropboxAuth = async () => {
     try {
       // Fetch the Dropbox authentication URL from the backend using Axios
-      const response = await axios.get('http://localhost:3002/api/dropbox/auth-url');
+      const response = await axios.get(
+        'http://localhost:3002/api/dropbox/auth-url'
+      );
       // Redirect the user to the Dropbox authorization page
       window.location.href = response.data.url; // This triggers the OAuth flow
     } catch (error) {
@@ -202,9 +213,7 @@ export const AddJobs: React.FC = () => {
         >
           <Spinner size="xl" />
         </Box>
-
-      ):null
-      }
+      ) : null}
       <Box width="100%" mx="auto" mt={5}>
         {isLoading ? (
           <Box
@@ -225,7 +234,7 @@ export const AddJobs: React.FC = () => {
             >
               <Heading
                 pt={'4'}
-                fontSize={"x-large"}
+                fontSize={'x-large'}
                 display={'flex'}
                 justifyContent={'center'}
                 alignItems={'center'}
@@ -508,7 +517,9 @@ export const AddJobs: React.FC = () => {
                   }}
                 >
                   <Stack spacing={4}>
-                    <Heading fontSize={"x-large"}>Property Details Section</Heading>
+                    <Heading fontSize={'x-large'}>
+                      Property Details Section
+                    </Heading>
                     <FormControl isInvalid={!!errors.heatingType}>
                       <FormLabel htmlFor="heatingType">Heating Type</FormLabel>
                       <Select
@@ -516,9 +527,15 @@ export const AddJobs: React.FC = () => {
                         placeholder="Select Heating Type"
                         {...register('heatingType')}
                       >
-                        <option value="Central Heating">Central Heating</option>
-                        <option value="Electric Heating">Electric Heating</option>
-                        <option value="Gas Heating">Gas Heating</option>
+                        <option value="Electric Room Heater">
+                          Electric Room Heater
+                        </option>
+                        <option value="Electric Storage Heater">
+                          Electric Storage Heater
+                        </option>
+                        <option value="Gas Boiler">Gas Boiler</option>
+                        <option value="Electric Boiler">Electric Boiler</option>
+                        <option value="No Heating">No Heating</option>
                         <option value="Other">Other</option>
                       </Select>
                       <FormErrorMessage>
@@ -545,25 +562,28 @@ export const AddJobs: React.FC = () => {
                       </FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={!!errors.epcRating}>
-                      <FormLabel htmlFor="epcRating">
-                        Current EPC Rating
-                      </FormLabel>
+                    <FormControl isInvalid={!!errors.epcBand}>
+                      <FormLabel htmlFor="epcBand"> Current EPC Band</FormLabel>
                       <Select
-                        id="epcRating"
-                        placeholder="Select Rating "
-                        {...register('epcRating')}
+                        id="epcBand"
+                        placeholder="Select Band "
+                        {...register('epcBand')}
                       >
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                        <option value="E">E</option>
-                        <option value="F">F</option>
-                        <option value="G">G</option>
+                        <option value="High B">High B</option>
+                        <option value="Low B">Low B</option>
+                        <option value="High C">High C</option>
+                        <option value="Low C">Low C</option>
+                        <option value="High D">High D</option>
+                        <option value="Low D">Low D</option>
+                        <option value="High E">High E</option>
+                        <option value="Low E">Low E</option>
+                        <option value="High F">High F</option>
+                        <option value="Low F">Low F</option>
+                        <option value="High G">High G</option>
+                        <option value="Low G">Low G</option>
                       </Select>
                       <FormErrorMessage>
-                        {errors.epcRating?.message}
+                        {errors.epcBand?.message}
                       </FormErrorMessage>
                     </FormControl>
                   </Stack>
@@ -582,21 +602,23 @@ export const AddJobs: React.FC = () => {
                     <FormControl isInvalid={!!errors.serviceType}>
                       <FormLabel htmlFor="serviceType">Service Type</FormLabel>
                       <Select
-                        id='serviceType'
-                        placeholder='Select Service Type'
+                        id="serviceType"
+                        placeholder="Select Service Type"
                         {...register('serviceType')}
                       >
-                        <option value='Loft'>Loft Insulation</option>
-                        <option value='Electric'>
-                          Electric Storage Heater
+                        <option value="Internal wall insulation">
+                          Internal wall insulation
                         </option>
-                        <option value='Solar PV'>Solar PV</option>
-                        <option value='Internal'>Internal</option>
-                        <option value='External'>External</option>
-                        <option value='Air Source Heating Pump'>Air Source Heating Pump</option>
+                        <option value="External wall insulation">
+                          External wall insulation
+                        </option>
+                        <option value="Air source heat pump">
+                          Air source heat pump
+                        </option>
+                        <option value="other">other</option>
                       </Select>
                       <FormErrorMessage>
-                      {errors.serviceType?.message}
+                        {errors.serviceType?.message}
                       </FormErrorMessage>
                     </FormControl>
 
@@ -640,6 +662,61 @@ export const AddJobs: React.FC = () => {
                   </Stack>
                 </Box>
               </Box>
+              <Box style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: '15px',
+                    width: '100%',
+                    padding: '15px',
+                    margin: '15px 10px 10px 0px',
+                  }}
+                >
+                  <Stack spacing={4}>
+                    <Heading fontSize={'x-large'}>Water Heating Type</Heading>
+                    <FormControl isInvalid={!!errors.waterType}>
+                      <FormLabel htmlFor="WaterType">Water Type</FormLabel>
+                      <Select
+                        id="WaterType"
+                        placeholder="Select Water Type"
+                        {...register('waterType')}
+                      >
+                        <option value="Electric Instantaneous water Heater">
+                          Electric Instantaneous water Heater
+                        </option>
+                        <option value="Electric Immersion">
+                          Electric Immersion
+                        </option>
+                        <option value="From mains">From mains</option>
+                        <option value="Other">Other</option>
+                        <option value="Non">Non</option>
+                      </Select>
+
+                      <FormErrorMessage>
+                        {errors.waterType?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                    <FormControl isInvalid={!!errors.epcRating}>
+                      <FormLabel htmlFor="agentEmail">Current EPC</FormLabel>
+                      <NumberInput max={100} min={0}>
+                        <NumberInputField
+                          id={'epcRating'}
+                          maxLength={2}
+                          placeholder={'Enter 1 to 100'}
+                          {...register('epcRating')}
+                        />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                      <FormErrorMessage>
+                        {errors.agentEmail?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                  </Stack>
+                </Box>
+              </Box>
             </Box>
             <Button mt={4} colorScheme="teal" type="submit">
               Submit
@@ -650,4 +727,3 @@ export const AddJobs: React.FC = () => {
     </React.Fragment>
   );
 };
-

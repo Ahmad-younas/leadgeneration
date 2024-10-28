@@ -7,6 +7,6 @@ const sequelize = new Sequelize({
   password: "root",
   host: "localhost",
   dialect: "mysql",
-  models: [Month], // Register all your models here
+  models: [Month],
 });
 export default sequelize;

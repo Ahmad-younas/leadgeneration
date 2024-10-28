@@ -1,4 +1,4 @@
-import { Stack, useColorModeValue } from '@chakra-ui/react';
+import { useColorModeValue } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { EmployeeNavbarLink } from './EmployeeNavbarLink';
 import {
@@ -9,11 +9,14 @@ import {
 import { ConfigureCalendar } from './ConfigureCalendar';
 import moment from 'moment';
 import axios from 'axios';
+
 interface Event {
   start: Date;
   end: Date;
   title: string;
+  id: number;
 }
+
 export const Calendar: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const token = localStorage.getItem('authToken');
@@ -25,36 +28,49 @@ export const Calendar: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://localhost:3002/api/getJobStatusById',{
-          withCredentials:true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-        });// Adjust the URL and ID as needed
+        const response = await axios.get(
+          'http://localhost:3002/api/getJobStatusById',
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ); // Adjust the URL and ID as needed
+        const { usersWithJobs } = response.data;
+        console.log('data', usersWithJobs);
+        const mappedEvents = Array.isArray(usersWithJobs)
+          ? usersWithJobs.map(
+              (job: {
+                status: string;
+                job_creation_date: string;
+                id: number;
+              }) => ({
+                start: moment(job.job_creation_date).toDate(),
+                end: moment(job.job_creation_date).toDate(),
+                title: job.status,
+                id: job.id,
+              })
+            )
+          : [
+              {
+                start: moment(usersWithJobs.start).toDate(),
+                end: moment(usersWithJobs.start).toDate(),
+                title: usersWithJobs.status,
+                id: usersWithJobs.id,
+              },
+            ];
 
-        console.log("response",response);
-        const { data } = response;
-        const mappedEvents = Array.isArray(data)
-          ? data.map((job: { status: string; job_creation_date: string }) => ({
-            start: moment(job.job_creation_date).toDate(),
-            end: moment(job.job_creation_date).toDate(),
-            title: job.status,
-          }))
-          : [{
-            start: moment(data.start).toDate(),
-            end: moment(data.start).toDate(),
-            title: data.status,
-          }];
-
+        console.log('mappedEvent', mappedEvents);
         setEvents(mappedEvents);
       } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error('Error fetching events:', error);
       }
     };
 
     fetchEvents();
   }, []);
-  console.log("events",events);
+  console.log('events', events);
   return (
     <React.Fragment>
       <EmployeeNavbarLink
@@ -65,7 +81,10 @@ export const Calendar: React.FC = () => {
         navbarIconColor={navbarIcon}
         backgroundColor={backGroundColor}
       />
-        <ConfigureCalendar events={events} views={["day", "month", "week", "work_week"]}/>
+      <ConfigureCalendar
+        events={events}
+        views={['day', 'month', 'week', 'work_week']}
+      />
     </React.Fragment>
   );
 };
