@@ -28,9 +28,5 @@ router.get("/auth/google", googleAuthController_1.getAuthUrl);
 // Route to handle the OAuth2 callback
 router.post("/auth/callback", googleAuthController_1.oauth2Callback);
 router.get("/dropbox/auth-url", dropboxController_1.getDropboxAuthUrl);
-router.post(
-  "/dropbox/callback",
-  auth_1.authenticateJWT,
-  dropboxController_1.dropboxAuthCallback,
-);
+route'/dropbox/callback'llback", auth_1.authenticateJWT, dropboxController_1.dropboxAuthCallback);
 exports.default = router;

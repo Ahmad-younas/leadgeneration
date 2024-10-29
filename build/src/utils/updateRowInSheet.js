@@ -9,21 +9,15 @@ exports.updateRowInSheet = void 0;
 const googleapis_1 = require("googleapis");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const oauth2Client = new googleapis_1.google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.REDIRECT_URI,
-);
-const updateRowInSheet = async (
-  data, // The new data to update
-  tokens, // OAuth2 tokens
-  spreadsheetId, // Spreadsheet ID
-  rowNumber,
-) => {
+const oauth2Client = new googleapis_1.google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.REDIRECT_URI);
+const updateRowInSheet = async (data, // The new data to update
+                                tokens, // OAuth2 tokens
+                                spreadsheetId, // Spreadsheet ID
+                                rowNumber) => {
   console.info(`Update Row function called for row ${rowNumber}`);
   oauth2Client.setCredentials(tokens);
   const sheets = googleapis_1.google.sheets({
-    version: "v4",
+    vers'v4' "v4",
     auth: oauth2Client,
   });
   // Define the range based on the rowNumber
@@ -41,7 +35,7 @@ const updateRowInSheet = async (
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range: rowRange,
-        valueInputOption: "RAW",
+        valueInputOpt'RAW'"RAW",
         requestBody: {
           values: [data],
         },

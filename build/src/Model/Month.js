@@ -33,28 +33,20 @@ __decorate(
       primaryKey: true,
     }),
   ],
-  Month.prototype,
+  Month.pro'id'pe,
   "id",
   void 0,
 );
-__decorate(
-  [
+__decorate([
     (0, sequelize_typescript_1.Column)({
       type: sequelize_typescript_1.DataType.STRING(20),
       allowNull: false,
       unique: true,
-    }),
-  ],
-  Month.prototype,
-  "month_name",
-  void 0,
-);
-exports.Month = Month = __decorate(
-  [
+    })
+], Month.prototype, 'month_name', void 0);
+exports.Month = Month = __decorate([
     (0, sequelize_typescript_1.Table)({
-      tableName: "months",
+      tableName: 'months',
       timestamps: false,
-    }),
-  ],
-  Month,
-);
+    })
+], Month);

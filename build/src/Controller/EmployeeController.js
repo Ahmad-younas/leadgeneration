@@ -35,52 +35,51 @@ const oauth2Client = new googleapis_1.google.auth.OAuth2(
 );
 //This function Get all the Jobs
 const getLeads = (req, res) => {
-  res.send("Leads Add Successfully").status(201);
+  'Leads Add Successfully'essfully").status(201);
 };
 exports.getLeads = getLeads;
 const updateLeads = (req, res) => {
-  res.send("Update Add Successfully").status(201);
+  res.send('Update Add Successfully').status(201);
 };
 exports.updateLeads = updateLeads;
-
 // Send Data to Google Sheet After Authorization
 async function appendToSheet(data, tokens, spreadsheetId) {
-  logger_2.default.info("Append to Sheet function called");
+  logger_2.default.info('Append to Sheet function called');
   oauth2Client.setCredentials(tokens); // Use stored tokens
   const sheets = googleapis_1.google.sheets({
-    version: "v4",
+    version: 'v4',
     auth: oauth2Client,
   });
   // Define the header
   const headers = [
-    "Title",
-    "First Name",
-    "Last Name",
-    "Date of Birth",
-    "Email",
-    "Contact Number",
-    "Address",
-    "Postcode",
-    "Landlord Name",
-    "Landlord Contact Number",
-    "Landlord Email",
-    "Agent Name",
-    "Agent Contact Number",
-    "Agent Email",
-    "Heating Type",
-    "Property Type",
-    "EPC Rating",
-    "EPC Band",
-    "Water Type",
-    "Service Type",
-    "Assessment Date",
-    "Notes",
-    "Month",
-    "Year",
-    "Status",
+    'Title',
+    'First Name',
+    'Last Name',
+    'Date of Birth',
+    'Email',
+    'Contact Number',
+    'Address',
+    'Postcode',
+    'Landlord Name',
+    'Landlord Contact Number',
+    'Landlord Email',
+    'Agent Name',
+    'Agent Contact Number',
+    'Agent Email',
+    'Heating Type',
+    'Property Type',
+    'EPC Rating',
+    'EPC Band',
+    'Water Type',
+    'Service Type',
+    'Assessment Date',
+    'Notes',
+    'Month',
+    'Year',
+    'Status',
   ];
   // Range for the header (top row)
-  const headerRange = "Sheet1!A1:Y1"; // Adjust range based on the number of columns
+  const headerRange = 'Sheet1!A1:Y1'; // Adjust range based on the number of columns
   // Step 1: Check if the header already exists
   const existingHeaderResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
@@ -89,25 +88,25 @@ async function appendToSheet(data, tokens, spreadsheetId) {
   const existingHeader = existingHeaderResponse.data.values;
   // Step 2: If no header exists, append the header
   if (!existingHeader || existingHeader.length === 0) {
-    logger_2.default.info("Header is missing. Appending the header.");
+    logger_2.default.info('Header is missing. Appending the header.');
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: headerRange,
-      valueInputOption: "RAW",
+      valueInputOption: 'RAW',
       requestBody: {
         values: [headers],
       },
     });
-    logger_2.default.info("Header appended to the sheet.");
+    logger_2.default.info('Header appended to the sheet.');
   } else {
-    logger_2.default.info("Header already exists. Skipping header append.");
+    logger_2.default.info('Header already exists. Skipping header append.');
   }
   // Step 3: Append the data below the header (after the header)
-  const dataRange = "Sheet1!A2"; // Assuming appending starts from row 2 onwards
+  const dataRange = 'Sheet1!A2'; // Assuming appending starts from row 2 onwards
   const response = await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: dataRange,
-    valueInputOption: "RAW",
+    valueInputOption: 'RAW',
     requestBody: {
       values: [data], // Data to append
     },
@@ -117,26 +116,25 @@ async function appendToSheet(data, tokens, spreadsheetId) {
   const rowNumber = match ? match[1] : null;
   return rowNumber ? parseInt(rowNumber) : NaN;
 }
-
 //This function is used to Store the Jobs into the DB
 const addLeads = async (req, res) => {
-  logger_2.default.info("Add Jobs function Triggered");
+  logger_2.default.info('Add Jobs function Triggered');
   const id = req.user?.id;
   const currentDate = new Date();
   const monthIndex = currentDate.getMonth();
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   const {
     title,
@@ -167,36 +165,28 @@ const addLeads = async (req, res) => {
     const employee = await model_1.Employee.findByPk(user_id);
     const googleToken = employee?.dataValues.googleTokens;
     if (!employee || !employee?.dataValues.googleTokens) {
-      logger_2.default.info("Employee or googleToken not found");
+      logger_2.default.info('Employee or googleToken not found');
       return res
         .status(404)
-        .json({ error: "Employee not authenticated with Google" });
+        .json({ error: 'Employee not authenticated with Google' });
     }
     if (!googleToken) {
-      throw new Error("Google tokens are missing for the employee.");
+      throw new Error('Google tokens are missing for the employee.');
     }
     // Check if the employee already has a spreadsheet
     let spreadsheetId = employee.dataValues.spreadsheetId;
     // If the spreadsheet doesn't exist, create a new one
     if (!spreadsheetId) {
-      logger_2.default.info("spreadSheet is empty");
-      spreadsheetId = await (0, spreadSheetService_1.createSpreadsheet)(
-        googleToken,
-      );
-      console.log("spreadsheetID", spreadsheetId);
-      await model_1.Employee.update(
-        { spreadsheetId },
-        { where: { id: employee.dataValues.id } },
-      ); // Save the updated employee record
-      logger_2.default.info("spreadSheet is created");
+      logger_2.default.info('spreadSheet is empty');
+      spreadsheetId = await (0, spreadSheetService_1.createSpreadsheet)(googleToken);
+      console.log('spreadsheetID', spreadsheetId);
+      await model_1.Employee.update({ spreadsheetId }, { where: { id: employee.dataValues.id } }); // Save the updated employee record
+      logger_2.default.info('spreadSheet is created');
     }
-    let googleTokens =
-      typeof employee.dataValues.googleTokens === "string"
-        ? JSON.parse(employee.dataValues.googleTokens)
-        : employee.dataValues.googleTokens;
-    googleTokens = await (0, checkAndRefreshToken_1.refreshGoogleTokens)(
-      googleTokens,
-    );
+    let googleTokens = typeof employee.dataValues.googleTokens === 'string'
+      ? JSON.parse(employee.dataValues.googleTokens)
+      : employee.dataValues.googleTokens;
+    googleTokens = await (0, checkAndRefreshToken_1.refreshGoogleTokens)(googleTokens);
     const dataArray = [
       title,
       firstName,
@@ -222,14 +212,10 @@ const addLeads = async (req, res) => {
       notes,
       monthNames[monthIndex],
       new Date().getFullYear().toString(),
-      "Booked",
+      'Booked',
     ];
-    const sheetRowNumber = await appendToSheet(
-      dataArray,
-      googleTokens,
-      spreadsheetId,
-    );
-    console.log("sheetRowNumber", sheetRowNumber);
+    const sheetRowNumber = await appendToSheet(dataArray, googleTokens, spreadsheetId);
+    console.log('sheetRowNumber', sheetRowNumber);
     await model_1.Job.create({
       title,
       firstName,
@@ -254,24 +240,24 @@ const addLeads = async (req, res) => {
       user_id,
       month: monthNames[monthIndex],
       year: new Date().getFullYear().toString(),
-      status: "Booked",
+      status: 'Booked',
       rowNumber: sheetRowNumber,
       waterType,
       epcBand,
     });
     const user = await model_1.Employee.findByPk(id);
     if (user?.dataValues.link) {
-      logger_1.default.info("Job created Successfully");
-      res.status(201).json({ message: "Job added successfully" });
+      logger_1.default.info('Job created Successfully');
+      res.status(201).json({ message: 'Job added successfully' });
     } else {
-      res.status(204).json({ message: "Link Not Found" });
+      res.status(204).json({ message: 'Link Not Found' });
     }
   } catch (err) {
     if (err instanceof Error) {
-      console.log("error", err);
+      console.log('error', err);
       logger_1.default.error(err.message);
     }
-    res.status(500).json({ message: "Error adding job", error: err });
+    res.status(500).json({ message: 'Error adding job', error: err });
   }
 };
 exports.addLeads = addLeads;
@@ -284,25 +270,25 @@ const getJobInfoOfEmployee = async (req, res) => {
     // Fetch users with associated employee jobs
     const usersWithJobs = await model_1.Job.findAll({
       attributes: [
-        "id",
-        "user_id",
-        "title",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "email",
-        "contactNumber",
-        "address",
-        "postcode",
-        "landlordName",
-        "landlordContactNumber",
-        "landlordEmail",
-        "heatingType",
-        "propertyType",
-        "epcRating",
-        "serviceType",
-        "assessmentDate",
-        "notes",
+        'id',
+        'user_id',
+        'title',
+        'firstName',
+        'lastName',
+        'dateOfBirth',
+        'email',
+        'contactNumber',
+        'address',
+        'postcode',
+        'landlordName',
+        'landlordContactNumber',
+        'landlordEmail',
+        'heatingType',
+        'propertyType',
+        'epcRating',
+        'serviceType',
+        'assessmentDate',
+        'notes',
       ],
       where: {
         user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -326,9 +312,9 @@ const getJobInfoOfEmployee = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    console.error('Error fetching employee with job info:', error);
     res.status(500).json({
-      message: "Failed to fetch employee with job information",
+      message: 'Failed to fetch employee with job information',
       error: error,
     });
   }
@@ -343,25 +329,25 @@ const getJobInfoOfEmployeeWithPagination = async (req, res) => {
     // Fetch users with associated employee jobs
     const usersWithJobs = await model_1.Job.findAll({
       attributes: [
-        "id",
-        "title",
-        "user_id",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "email",
-        "contactNumber",
-        "address",
-        "postcode",
-        "landlordName",
-        "landlordContactNumber",
-        "landlordEmail",
-        "heatingType",
-        "propertyType",
-        "epcRating",
-        "serviceType",
-        "assessmentDate",
-        "notes",
+        'id',
+        'title',
+        'user_id',
+        'firstName',
+        'lastName',
+        'dateOfBirth',
+        'email',
+        'contactNumber',
+        'address',
+        'postcode',
+        'landlordName',
+        'landlordContactNumber',
+        'landlordEmail',
+        'heatingType',
+        'propertyType',
+        'epcRating',
+        'serviceType',
+        'assessmentDate',
+        'notes',
       ],
       where: {
         user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -385,9 +371,9 @@ const getJobInfoOfEmployeeWithPagination = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    console.error('Error fetching employee with job info:', error);
     res.status(500).json({
-      message: "Failed to fetch employee with job information",
+      message: 'Failed to fetch employee with job information',
       error: error,
     });
   }
@@ -403,7 +389,7 @@ const getIndividualEmployeeWithJobInfo = async (req, res) => {
     // Check if both employeeInfo and employeeJobInfo exist
     if (!employeeInfo || !employeeJobInfo) {
       return res.status(404).json({
-        message: "Employee or Employee Job not found",
+        message: 'Employee or Employee Job not found',
       });
     }
     res.status(200).json({
@@ -411,9 +397,9 @@ const getIndividualEmployeeWithJobInfo = async (req, res) => {
       employeeJobInfo,
     });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    console.error('Error fetching employee with job info:', error);
     res.status(500).json({
-      message: "Failed to fetch employee with job information",
+      message: 'Failed to fetch employee with job information',
       error: error,
     });
   }
@@ -426,25 +412,22 @@ const getMonthlyJobCountOfEmployee = async (req, res) => {
     // Ensure userId and year are provided and valid
     if (!id) {
       return res.status(400).json({
-        message: "Missing 'userId' or 'year' query parameter",
+        message: 'Missing \'userId\' or \'year\' query parameter',
       });
     }
     // Perform the Sequelize query to get the monthly job count
     const monthlyJobCounts = await model_1.Month.findAll({
       attributes: [
-        "month_name",
+        'month_name',
         [
-          sequelize_typescript_1.Sequelize.fn(
-            "COUNT",
-            sequelize_typescript_1.Sequelize.col("jobs.id"),
-          ),
-          "total_jobs_on_each_month",
+          sequelize_typescript_1.Sequelize.fn('COUNT', sequelize_typescript_1.Sequelize.col('jobs.id')),
+          'total_jobs_on_each_month',
         ], // Count the total jobs for each month
       ],
       include: [
         {
           model: model_1.Job,
-          as: "jobs", // Use the alias defined in the association
+          as: 'jobs', // Use the alias defined in the association
           attributes: [], // Exclude all attributes from Job, only need the count
           where: {
             year: new Date().getFullYear(), // Filter by year
@@ -453,16 +436,16 @@ const getMonthlyJobCountOfEmployee = async (req, res) => {
           required: false, // Ensures a LEFT JOIN
         },
       ],
-      group: ["Month.month_name"], // Group by the month_name column
+      group: ['Month.month_name'], // Group by the month_name column
       raw: true, // Use raw SQL for more control
     });
     console.log(monthlyJobCounts);
     // Send the result as a response
     res.status(200).json(monthlyJobCounts);
   } catch (error) {
-    console.error("Error fetching monthly job count:", error);
+    console.error('Error fetching monthly job count:', error);
     res.status(500).json({
-      message: "Failed to fetch monthly job count",
+      message: 'Failed to fetch monthly job count',
       error: error,
     });
   }
@@ -474,20 +457,14 @@ const getStatusCountOfJobs = async (req, res) => {
     // Ensure userId and year are provided and valid
     if (!id) {
       return res.status(400).json({
-        message: "Missing 'userId' or 'year' query parameter",
+        message: 'Missing \'userId\' or \'year\' query parameter',
       });
     }
     // Perform the Sequelize query to get the monthly job count
     const monthlyJobCounts = await model_1.Job.findAll({
       attributes: [
-        "status",
-        [
-          sequelize_typescript_1.Sequelize.fn(
-            "COUNT",
-            sequelize_typescript_1.Sequelize.col("status"),
-          ),
-          "status_count",
-        ],
+        'status',
+        [sequelize_typescript_1.Sequelize.fn('COUNT', sequelize_typescript_1.Sequelize.col('status')), 'status_count'],
       ],
       where: {
         status: {
@@ -495,14 +472,14 @@ const getStatusCountOfJobs = async (req, res) => {
         },
         user_id: id, // Filter by user_id = '3'
       },
-      group: ["status"], // Group by the 'status' column
+      group: ['status'], // Group by the 'status' column
     });
     // Send the result as a response
     res.status(200).json(monthlyJobCounts);
   } catch (error) {
-    console.error("Error fetching monthly job count:", error);
+    console.error('Error fetching monthly job count:', error);
     res.status(500).json({
-      message: "Failed to fetch monthly job count",
+      message: 'Failed to fetch monthly job count',
       error: error,
     });
   }
@@ -522,15 +499,15 @@ const getEmployeeJobs = async (req, res) => {
     if (employeeJobs.length === 0) {
       return res
         .status(404)
-        .json({ message: "No employee jobs found for the specified user." });
+        .json({ message: 'No employee jobs found for the specified user.' });
     }
     // Respond with the fetched jobs
     res.status(200).json(employeeJobs);
   } catch (error) {
     // Handle any errors during the fetch
-    console.error("Error fetching employee jobs:", error);
+    console.error('Error fetching employee jobs:', error);
     res.status(500).json({
-      message: "An error occurred while fetching employee jobs.",
+      message: 'An error occurred while fetching employee jobs.',
       error,
     });
   }
@@ -547,12 +524,12 @@ const createDropboxFolder = async (req, res) => {
     // Create the folder in Dropbox
     const folderResponse = await dbx.filesCreateFolderV2({ path: folderName });
     res.status(201).json({
-      message: "Folder created successfully",
+      message: 'Folder created successfully',
       folderId: folderResponse.result.metadata.id,
     });
   } catch (error) {
-    console.error("Error creating Dropbox folder:", error);
-    res.status(500).json({ error: "Failed to create Dropbox folder" });
+    console.error('Error creating Dropbox folder:', error);
+    res.status(500).json({ error: 'Failed to create Dropbox folder' });
   }
 };
 exports.createDropboxFolder = createDropboxFolder;
@@ -561,26 +538,26 @@ const getJobStatusById = async (req, res) => {
   try {
     const usersWithJobs = await model_1.Job.findAll({
       attributes: [
-        "id",
-        "title",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "email",
-        "contactNumber",
-        "address",
-        "postcode",
-        "landlordName",
-        "landlordContactNumber",
-        "landlordEmail",
-        "heatingType",
-        "propertyType",
-        "epcRating",
-        "serviceType",
-        "assessmentDate",
-        "notes",
-        "status",
-        "job_creation_date",
+        'id',
+        'title',
+        'firstName',
+        'lastName',
+        'dateOfBirth',
+        'email',
+        'contactNumber',
+        'address',
+        'postcode',
+        'landlordName',
+        'landlordContactNumber',
+        'landlordEmail',
+        'heatingType',
+        'propertyType',
+        'epcRating',
+        'serviceType',
+        'assessmentDate',
+        'notes',
+        'status',
+        'job_creation_date',
       ],
       where: {
         user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -588,9 +565,9 @@ const getJobStatusById = async (req, res) => {
     });
     res.status(200).json({ usersWithJobs });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    console.error('Error fetching employee with job info:', error);
     res.status(500).json({
-      message: "Failed to fetch employee with job information",
+      message: 'Failed to fetch employee with job information',
       error: error,
     });
   }

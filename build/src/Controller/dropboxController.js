@@ -14,7 +14,7 @@ const logger_1 = __importDefault(require("../logger")); // Step 1: Redirect user
 dotenv_1.default.config();
 // Step 1: Redirect user to Dropbox for authentication
 const getDropboxAuthUrl = (req, res) => {
-  logger_1.default.info("getDropboxAuthUrl Triggered");
+  logger_1.default.'getDropboxAuthUrl Triggered'ered");
   const redirectUri = process.env.DROPBOX_REDIRECT_URI;
   dropbox_1.dropboxAuth.setClientId(process.env.DROPBOX_APPKEY);
   dropbox_1.dropboxAuth
@@ -23,14 +23,14 @@ const getDropboxAuthUrl = (req, res) => {
       res.json({ url: authUrl });
     })
     .catch((error) => {
-      console.error("Error generating Dropbox Auth URL:", error);
-      res.status(500).json({ error: "Failed to generate authentication URL" });
+      console.error('Error generating Dropbox Auth URL:', error);
+      res.status(500).json({ error: 'Failed to generate authentication URL' });
     });
 };
 exports.getDropboxAuthUrl = getDropboxAuthUrl;
 // Function to handle the callback, create a folder, and generate a shareable link
 const dropboxAuthCallback = async (req, res) => {
-  logger_1.default.info("dropboxAuthCallback Triggered");
+  logger_1.default.info('dropboxAuthCallback Triggered');
   const user = req.user;
   const { accessToken } = req.body; // Access token sent from the client side
   try {
@@ -50,21 +50,18 @@ const dropboxAuthCallback = async (req, res) => {
     const fullLink = linkResponse.result.url;
     const job = await model_1.Employee.findOne({ where: { id: user?.id } });
     if (!job) {
-      return res.status(404).json({ error: "Job not found for the user." });
+      return res.status(404).json({ error: 'Job not found for the user.' });
     }
     await job.update({ link: fullLink });
     // Send the shareable link back to the client
     res.status(200).json({
-      message: "Folder created successfully in Dropbox.",
+      message: 'Folder created successfully in Dropbox.',
     });
   } catch (error) {
-    console.error(
-      "Error creating folder or generating link in Dropbox:",
-      error,
-    );
+    console.error('Error creating folder or generating link in Dropbox:', error);
     res
       .status(500)
-      .json({ error: "Failed to create folder or generate link in Dropbox." });
+      .json({ error: 'Failed to create folder or generate link in Dropbox.' });
   }
 };
 exports.dropboxAuthCallback = dropboxAuthCallback;

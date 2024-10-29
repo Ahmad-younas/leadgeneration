@@ -19,14 +19,14 @@ const refreshGoogleTokens = async (googleTokens) => {
   oauth2Client.setCredentials(googleTokens);
   // Check if the access token has expired
   if (googleTokens.expiry_date && Date.now() > googleTokens.expiry_date) {
-    logger_1.default.info("Access token expired. Refreshing token...");
-    console.log("GoogleToken", googleTokens);
+    logger_1.defa'Access token expired. Refreshing token...'token...");
+    con'GoogleToken'gleToken", googleTokens);
     const newTokens = await oauth2Client.refreshAccessToken();
     oauth2Client.setCredentials(newTokens.credentials);
     googleTokens.access_token = newTokens.credentials.access_token;
     googleTokens.expiry_date = newTokens.credentials.expiry_date;
     googleTokens.refresh_token = newTokens.credentials.refresh_token; // Keep the old refresh_token if not provided
-    logger_1.default.info("Tokens refreshed successfully.");
+    logger_1.defa'Tokens refreshed successfully.'ssfully.");
   }
   return googleTokens;
 };
