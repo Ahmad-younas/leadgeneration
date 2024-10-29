@@ -12,10 +12,11 @@ sequelize
     );
   })
   .catch((err) => {
-    logger.info(
+    logger.error(
       `Unable to connect to the database in ${process.env.NODE_ENV || "development"} mode`,
       err,
     );
+    console.log(`Unable to connect to the database:${err}`);
   });
 const port = process.env.PORT || 3002;
 console.log(port);

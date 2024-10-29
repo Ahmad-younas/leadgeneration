@@ -16,7 +16,8 @@ DbConnection_1.default
     logger_1.default.info(`Connection has been established successfully in ${process.env.NODE_ENV || 'development'} mode`);
   })
   .catch((err) => {
-    logger_1.default.info(`Unable to connect to the database in ${process.env.NODE_ENV || 'development'} mode`, err);
+    logger_1.default.error(`Unable to connect to the database in ${process.env.NODE_ENV || 'development'} mode`, err);
+    console.log(`Unable to connect to the database:${err}`);
   });
 const port = process.env.PORT || 3002;
 console.log(port);
