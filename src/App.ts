@@ -13,7 +13,6 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 app.use(bodyParser.urlencoded({ extended: false }));
-console.log("path=>", path.join(__dirname, "../build"));
 app.use(express.static(path.join(__dirname, "../build")));
 app.use(cors(corsOptions));
 app.use(express.json());
