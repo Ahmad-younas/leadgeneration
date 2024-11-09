@@ -1,18 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
-  FormErrorMessage,
-  useToast, InputGroup, InputRightElement,
+  InputGroup,
+  InputRightElement,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -44,7 +46,10 @@ const schema = yup.object().shape({
     .required('Password is required'),
 });
 
-export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
+export const ProfileModal: React.FC<ProfileModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLInputElement>(null);
   const token = localStorage.getItem('authToken');
@@ -78,13 +83,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       const fetchData = async () => {
         try {
           setLoading(true);
-          const response = await axios.get('http://localhost:3002/api/getEmployeeById', {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`, // Fixed token issue
-            },
-          });
+          const response = await axios.get(
+            'http://localhost:3002/api/getEmployeeById',
+            {
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, // Fixed token issue
+              },
+            }
+          );
           setDefaultData(response.data.employee);
           reset(response.data.employee); // Set default values in form
           setLoading(false);
@@ -102,7 +110,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const onSubmit = async (formData: AdminData) => {
     try {
       const response = await axios.patch(
-        'http://localhost:3002/api/update-employee',
+        'http://localhost:3002/api/update-admin',
         {
           email: formData.email,
           name: formData.username,
@@ -112,7 +120,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // Fixed token issue
+            Authorization: `Bearer ${token}`, // Fixed token issue
           },
         }
       );
@@ -141,7 +149,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   };
 
   return (
-    <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose}>
+    <Modal
+      initialFocusRef={initialRef}
+      finalFocusRef={finalRef}
+      isOpen={isOpen}
+      onClose={onClose}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Update Information</ModalHeader>
@@ -166,10 +179,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               <FormControl mt={4} isInvalid={!!errors.password}>
                 <FormLabel>Password</FormLabel>
                 <InputGroup>
-                  <Input placeholder="Password" type={show ? 'text' : 'password'} {...register('password')} />
-                  <InputRightElement width='4.5rem'>
-                    <Button h='1.75rem' size='sm' onClick={handleClick}>
-                      {show ? <ViewIcon/> : <ViewOffIcon/>}
+                  <Input
+                    placeholder="Password"
+                    type={show ? 'text' : 'password'}
+                    {...register('password')}
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button h="1.75rem" size="sm" onClick={handleClick}>
+                      {show ? <ViewIcon /> : <ViewOffIcon />}
                     </Button>
                   </InputRightElement>
                 </InputGroup>

@@ -2,20 +2,23 @@ import express from "express";
 import { authenticateJWT, authorizeRole } from "../Middleware/auth";
 import {
   addEmployee,
+  authWithDropBox,
   deleteAllJobs,
   deleteEmployee,
   deleteSelectedEmployees,
   deleteSelectedJobs,
   findAllEmployee,
+  getAllJobStatus,
   getEmployeeById,
   getEmployeeInfoAndEmployeeJobInfo,
   getEmployeeJobInfo,
   getEmployeeWithJobInfo,
   getJobs,
   getMonthlyJobCounts,
-  updateEmployee,
+  updateAdmin, updateEmployee,
   updateEmployeeJob,
-} from "../Controller/AdminController";
+} from '../Controller/AdminController';
+import { createFolderInDropBox } from "../Controller/dropboxController";
 
 const router = express.Router();
 
@@ -27,9 +30,9 @@ router.post(
   addEmployee,
 );
 router.patch(
-  "/update-employee",
+  "/update-admin",
   authenticateJWT,
-  updateEmployee,
+  updateAdmin,
   authorizeRole("admin"),
 );
 router.get("/all-employee", findAllEmployee, authorizeRole("admin"));
@@ -57,4 +60,12 @@ router.put("/updateEmployeeJob", authenticateJWT, updateEmployeeJob);
 router.post("/deleteAllJobs", authenticateJWT, deleteAllJobs);
 router.get("/getEmployeeById", authenticateJWT, getEmployeeById);
 router.get("/getEmployeeJobInfo/:id", authenticateJWT, getEmployeeJobInfo);
+router.get("/authWithDropBox", authenticateJWT, authWithDropBox);
+router.post(
+  "/createFolderInDropBox/:id",
+  authenticateJWT,
+  createFolderInDropBox,
+);
+router.patch("/updateEmployee",authenticateJWT,updateEmployee)
+router.get("/getAllJobStatus", authenticateJWT, getAllJobStatus);
 export default router;

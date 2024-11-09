@@ -1,5 +1,6 @@
 import Job from "../Model/Job";
 import { Employee } from "../Model/model";
+import Logger from "../logger";
 
 type SpreadsheetInfo = {
   spreadSheetId: string | undefined;
@@ -10,6 +11,7 @@ export const getSpreadSheetIdAndRowNumber = async (
   jobId: number,
   userId: string | undefined,
 ): Promise<SpreadsheetInfo> => {
+  Logger.info("getSpreadSheetIdAndRowNumber Function Called");
   try {
     const job = await Job.findOne({
       where: { id: jobId },

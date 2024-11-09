@@ -405,7 +405,7 @@ export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
 
                             <FormControl>
                               <FormLabel htmlFor="epcRating">
-                                Current EPC Rating
+                                Current EPC Band
                               </FormLabel>
                               <InputGroup>
                                 <InputLeftElement pointerEvents={'none'}>
@@ -415,7 +415,7 @@ export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
                                   />
                                 </InputLeftElement>
                                 <Input
-                                  defaultValue={jobDetails.epcRating}
+                                  defaultValue={jobDetails.epcBand}
                                   isReadOnly={true}
                                 />
                               </InputGroup>
@@ -499,6 +499,60 @@ export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
                           </Stack>
                         </Box>
                       </Box>
+                      <Box
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Box
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <Box
+                            style={{
+                              backgroundColor: 'white',
+                              borderRadius: '15px',
+                              width: '100%',
+                              padding: '15px',
+                              margin: '15px 10px 10px 0px',
+                            }}
+                          >
+                            <Stack spacing={4}>
+                              <Heading fontSize={'x-large'}>
+                                Water Heating Type
+                              </Heading>
+                              <FormControl>
+                                <FormLabel htmlFor="waterType">
+                                  Water Type
+                                </FormLabel>
+                                <Input
+                                  defaultValue={jobDetails.waterType}
+                                  isReadOnly={true}
+                                />
+                              </FormControl>
+                              <Heading fontSize={'x-large'}>
+                                Current EPC Rating
+                              </Heading>
+                              <FormControl>
+                                <FormLabel htmlFor={'Current EPC Rating'}>
+                                  <Input
+                                    defaultValue={jobDetails.epcRating}
+                                    isReadOnly={true}
+                                  />
+                                </FormLabel>
+                              </FormControl>
+                            </Stack>
+                          </Box>
+                        </Box>
+                      </Box>
+                      <ModalFooter>
+                        <Button colorScheme="teal" size="lg" onClick={onClose}>
+                          Close
+                        </Button>
+                      </ModalFooter>
                     </Box>
                   </form>
                 </Box>
@@ -506,11 +560,6 @@ export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
             ) : (
               <Text>Loading job details...</Text>
             )}
-            <ModalFooter>
-              <Button colorScheme="teal" onClick={onClose}>
-                Close
-              </Button>
-            </ModalFooter>
           </ModalContent>
         </Modal>
       )}

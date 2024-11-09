@@ -1,5 +1,6 @@
 import { google, sheets_v4 } from "googleapis";
 import dotenv from "dotenv";
+import Logger from "../logger";
 
 type GoogleTokens = {
   access_token?: string;
@@ -21,17 +22,14 @@ export const updateRowInSheet = async (
   spreadsheetId: string | undefined, // Spreadsheet ID
   rowNumber: number | undefined, // Row number to update (from the DB)
 ): Promise<void> => {
-  console.info(`Update Row function called for row ${rowNumber}`);
+  Logger.info("updateRowInSheet Function Called");
   oauth2Client.setCredentials(tokens);
 
   const sheets: sheets_v4.Sheets = google.sheets({
     version: "v4",
     auth: oauth2Client,
   });
-
-  // Define the range based on the rowNumber
   const rowRange = `Sheet1!A${rowNumber}:Y${rowNumber}`; // Adjust to match your column count
-
   try {
     // Step 1: Check if the row already exists
     const existingRowResponse = await sheets.spreadsheets.values.get({
@@ -43,8 +41,6 @@ export const updateRowInSheet = async (
 
     // Step 2: If the row exists, update it with new data
     if (existingRow && existingRow.length > 0) {
-      console.info(`Updating row ${rowNumber} with new data.`);
-
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range: rowRange,
@@ -54,12 +50,12 @@ export const updateRowInSheet = async (
         },
       });
 
-      console.info(`Row ${rowNumber} updated successfully.`);
+      Logger.info(`Row ${rowNumber} updated successfully.`);
     } else {
-      console.warn(`Row ${rowNumber} does not exist. No update performed.`);
+      Logger.error(`Row ${rowNumber} does not exist. No update performed.`);
     }
   } catch (error) {
-    console.error(`Error updating row ${rowNumber}:`, error);
+    Logger.error(`Error updating row ${rowNumber}:`, error);
     throw new Error(`Failed to update row ${rowNumber}`);
   }
 };

@@ -30,6 +30,7 @@ interface CustomRequest extends Request {
 }
 
 export const getJobs = async (req: Request, res: Response) => {
+  Logger.info("getJobs Function Called");
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -40,7 +41,6 @@ export const getJobs = async (req: Request, res: Response) => {
     });
     const totalEmployees = await Job.count(); // Get the total number of employees
     const totalPages = Math.ceil(totalEmployees / limit);
-    //const totalJobs = await Job.count();
     res.status(200).json({
       jobs,
       meta: {
@@ -58,10 +58,16 @@ export const getJobs = async (req: Request, res: Response) => {
   }
 };
 export const addEmployee = async (req: Request, res: Response) => {
+  Logger.info("addEmployee Function Called");
   const { name, email, password, role } = req.body;
   try {
+    const checkEmployee = await Employee.findOne({ where: { email: email } });
+    if (checkEmployee) {
+      return res.status(302).json({
+        message: "An employee is already registered with this email.",
+      });
+    }
     const hashedPassword = encryptedPassword(password);
-    console.log(hashedPassword);
     const newEmployee = await Employee.create({
       username: name,
       email: email,
@@ -85,17 +91,17 @@ export const addEmployee = async (req: Request, res: Response) => {
  * @param {CustomRequest} req - Express request object.
  * @param {Response} res - Express response object.
  */
-export const updateEmployee = async (req: CustomRequest, res: Response) => {
+export const updateAdmin = async (req: CustomRequest, res: Response) => {
+  logger.info("UpdateAdmin Function Called");
   const id = req.user?.id;
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
   try {
     const hashedPassword = encryptedPassword(password);
-    const updateEmployee = await Employee.update(
+    await Employee.update(
       {
         username: name,
         email: email,
         password: hashedPassword,
-        role: role,
       },
       {
         where: {
@@ -103,11 +109,8 @@ export const updateEmployee = async (req: CustomRequest, res: Response) => {
         },
       },
     );
-    console.log("updated Employee", updateEmployee);
     logger.info("Employee updated");
-    res
-      .status(200)
-      .json({ message: "Employee updated successfully", updateEmployee });
+    res.status(200).json({ message: "Employee updated successfully" });
   } catch (err) {
     if (err instanceof Error) {
       logger.error(err.message);
@@ -117,11 +120,13 @@ export const updateEmployee = async (req: CustomRequest, res: Response) => {
 };
 
 export const findAllEmployee = async (req: Request, res: Response) => {
+  Logger.info("findAllEmployee Function Called");
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
     const employees = await Employee.findAll({
+      where: { role: "employee" },
       limit: limit,
       offset: offset,
     });
@@ -137,7 +142,6 @@ export const findAllEmployee = async (req: Request, res: Response) => {
         password: password,
         role: row.dataValues.role,
         id: row.dataValues.id,
-        link: row.dataValues.link,
       };
     });
     res.status(200).json({
@@ -159,6 +163,7 @@ export const findAllEmployee = async (req: Request, res: Response) => {
 };
 
 export const deleteEmployee = async (req: Request, res: Response) => {
+  Logger.info("deleteEmployee Function Called");
   const { id } = req.body;
   try {
     const deleted = await Employee.destroy({
@@ -185,6 +190,7 @@ export const deleteEmployee = async (req: Request, res: Response) => {
   }
 };
 export const getMonthlyJobCounts = async (req: Request, res: Response) => {
+  Logger.info("getMonthlyJobCounts Function Called");
   try {
     const results = await Month.findAll({
       attributes: [
@@ -222,16 +228,11 @@ export const getEmployeeInfoAndEmployeeJobInfo = async (
   req: Request,
   res: Response,
 ) => {
+  Logger.info("getEmployeeInfoAndEmployeeJobInfo Function Called");
   const { employeeJobId, employeeId } = req.body;
-  console.log("employeeJobid", employeeJobId);
-  console.log("employeeId", employeeId);
   try {
-    // Fetch the employee information using employeeId
     const employeeInfo = await Employee.findByPk(employeeId);
-    console.log("EmployeeInfo", employeeInfo);
-    // Fetch the employee job information using employeeJobId
     const employeeJobInfo = await Job.findByPk(employeeJobId);
-    console.log("EmployeeJobInfo", employeeJobInfo);
     if (!employeeInfo || !employeeJobInfo) {
       return res.status(404).json({
         message: "Employee or Employee Job not found",
@@ -253,6 +254,7 @@ export const getEmployeeInfoAndEmployeeJobInfo = async (
 };
 
 export const getEmployeeWithJobInfo = async (req: Request, res: Response) => {
+  Logger.info("getEmployeeWithJobInfo Function Called");
   try {
     const usersWithJobs = await Employee.findAll({
       attributes: ["username", "password", "role", "email"], // Specify the fields from the Users table
@@ -287,7 +289,6 @@ export const getEmployeeWithJobInfo = async (req: Request, res: Response) => {
       ],
     });
 
-    // Send the result as a response
     res.status(200).json(usersWithJobs);
   } catch (error) {
     console.error("Error fetching employee with job info:", error);
@@ -303,8 +304,8 @@ export const getEmployeeWithJobInfo = async (req: Request, res: Response) => {
  * @param res - The response object to send the status back.
  */
 export const deleteSelectedEmployees = async (req: Request, res: Response) => {
+  Logger.info("deleteSelectedEmployees Function Called");
   const { employeeIds } = req.body; // Expecting an array of employee IDs from the request body
-  Logger.info(`employeeIds->${employeeIds}`);
   try {
     await Job.destroy({
       where: {
@@ -328,8 +329,8 @@ export const deleteSelectedEmployees = async (req: Request, res: Response) => {
 };
 
 export const deleteSelectedJobs = async (req: Request, res: Response) => {
+  Logger.info("deleteSelectedJobs Function Called");
   const { jobIds } = req.body; // Expecting an array of employee IDs from the request body
-  Logger.info(`employeeIds->${jobIds}`);
   try {
     await Job.destroy({
       where: {
@@ -350,6 +351,7 @@ export const deleteSelectedJobs = async (req: Request, res: Response) => {
  * @param {Response} res - Express response object.
  */
 export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
+  Logger.info("updateEmployeeJob Function Called");
   const {
     id,
     title,
@@ -452,7 +454,6 @@ export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
     if (!spreadsheetId) {
       Logger.info("spreadSheet is empty");
       spreadsheetId = await createSpreadsheet(response.googleTokens);
-      console.log("spreadsheetID", spreadsheetId);
       await Employee.update({ spreadsheetId }, { where: { id: id } }); // Save the updated employee record
       Logger.info("spreadSheet is created");
     }
@@ -462,7 +463,21 @@ export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
         ? JSON.parse(response.googleTokens)
         : response.googleTokens;
 
-    googleTokens = await refreshGoogleTokens(googleTokens);
+    if (googleTokens.expiry_date != undefined) {
+      if (Date.now() >= googleTokens.expiry_date) {
+        googleTokens = await refreshGoogleTokens(googleTokens);
+        await Employee.update(
+          { googleTokens: JSON.stringify(googleTokens) },
+          {
+            where: { id: id },
+          },
+        );
+      }
+      logger.info("GoogleToken in DB successfully Updated");
+    } else {
+      logger.error("Token expiry date is undefined.");
+    }
+
     await updateRowInSheet(
       dataToUpdate,
       googleTokens,
@@ -486,14 +501,12 @@ export const updateEmployeeJob = async (req: CustomRequest, res: Response) => {
  * @param {Response} res - Express response object.
  */
 export const deleteAllJobs = async (req: CustomRequest, res: Response) => {
+  Logger.info("deleteAllJobs Function Called");
   try {
     // Deleting all jobs
     const deletedCount = await Job.destroy({
       where: {}, // Empty condition to match all records
     });
-
-    console.log("deletedCount", deletedCount);
-    // Check if any jobs were deleted
     if (deletedCount > 0) {
       return res.status(200).json({
         message: `${deletedCount} jobs were successfully deleted.`,
@@ -518,6 +531,7 @@ export const deleteAllJobs = async (req: CustomRequest, res: Response) => {
  * @param {Response} res - Express response object.
  */
 export const getEmployeeById = async (req: CustomRequest, res: Response) => {
+  Logger.info("getEmployeeById Function Called");
   const id = req.user?.id;
   try {
     const employee = await Employee.findByPk(id);
@@ -538,8 +552,8 @@ export const getEmployeeById = async (req: CustomRequest, res: Response) => {
 };
 
 export const getEmployeeJobInfo = async (req: Request, res: Response) => {
+  Logger.info("getEmployeeJobInfo Function Called");
   const jobId = req.params.id;
-  console.log("jobId", jobId);
   try {
     const job = await Job.findByPk(jobId);
     if (!job) {
@@ -548,5 +562,65 @@ export const getEmployeeJobInfo = async (req: Request, res: Response) => {
     res.json(job);
   } catch (error) {
     res.status(500).json({ error: "Error fetching job details" });
+  }
+};
+export const authWithDropBox = async (req: CustomRequest, res: Response) => {
+  Logger.info("authWithDropBox Function Called");
+  const id = req.user?.id;
+  const user = await Employee.findByPk(id);
+  if (user?.dataValues.dropboxAccessToken) {
+    logger.info("Already authenticated With Dropbox");
+    res.status(201).json({ message: "Already authenticated With Dropbox" });
+  } else {
+    res.status(204).json({ message: "Link Not Found" });
+  }
+};
+export const getAllJobStatus = async (req: Request, res: Response) => {
+  Logger.info("getAllJobStatus Function Called");
+  try {
+    const allUserJobs = await Job.findAll({
+      attributes: [
+        "id",
+        "title",
+        "status",
+        "job_creation_date", // Make sure this matches the exact column name in your database
+      ],
+    });
+    res.status(200).json(allUserJobs);
+  } catch (error) {
+    console.error("Error retrieving job statuses:", error);
+    res.status(500).json({ error: "Failed to retrieve job statuses." });
+  }
+};
+/**
+ * Update employee job data by ID.
+ * @param {CustomRequest} req - Express request object.
+ * @param {Response} res - Express response object.
+ */
+export const updateEmployee = async (req: CustomRequest, res: Response) => {
+  logger.info("UpdateEmployee Function Called");
+  const { id, name, email, password, role } = req.body;
+  try {
+    const hashedPassword = encryptedPassword(password);
+    const updateEmployee = await Employee.update(
+      {
+        username: name,
+        email: email,
+        password: hashedPassword,
+        role: role,
+      },
+      {
+        where: {
+          id,
+        },
+      },
+    );
+    logger.info("Employee updated");
+    res.status(200).json({ message: "Employee updated successfully" });
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+    }
+    res.status(500).json({ message: "Error updating employee", err });
   }
 };

@@ -95,8 +95,16 @@ export const AddEmployee: React.FC = () => {
             position: 'top-right',
           });
           dispatch(logout());
+        } else if (error?.response?.status === 302) {
+          toast({
+            title: 'Employee Status.',
+            description: error?.response?.data?.message,
+            status: 'warning',
+            duration: 5000,
+            isClosable: true,
+            position: 'top-right',
+          });
         }
-        console.error('An unexpected error occurred', error.response);
       } else {
         console.error('An unexpected error occurred', error);
       }

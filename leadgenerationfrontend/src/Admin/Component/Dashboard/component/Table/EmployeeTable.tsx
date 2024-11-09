@@ -3,15 +3,25 @@ import {
   getSecondLastPathSegment,
 } from '../../../../../RoutePath/Path';
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Flex, Heading, HStack, SkeletonText, useColorModeValue } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  HStack,
+  SkeletonText,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import { Employees } from './Employees';
 import axios from 'axios';
 import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
 import { AdminNavbarLink } from './AdminNavbarLink';
+
 interface MetaData {
   totalPages: number;
   currentPage: number;
 }
+
 export const EmployeeTable = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,39 +51,41 @@ export const EmployeeTable = () => {
     fetchEmployeeData();
   }, []);
 
-
   const pageNumbers: number[] = [];
 
-  for (let i = 1; i <=totalPages; i++) {
+  for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
   }
 
   const handleButtonClicked = async (page: number) => {
-      try {
-        const response = await axios.get(
-          'http://localhost:3002/api/all-employee/',{
-            params:{
-              page
-            }
-          }
-        );
-        setEmployeeData(response.data.data);
-        setMetaData(response.data.meta);
-      } catch (err) {
-        setError('Failed to fetch employee data.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const response = await axios.get(
+        'http://localhost:3002/api/all-employee/',
+        {
+          params: {
+            page,
+          },
+        }
+      );
+      setEmployeeData(response.data.data);
+      setMetaData(response.data.meta);
+    } catch (err) {
+      setError('Failed to fetch employee data.');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <React.Fragment>
       <Box display={'flex'} flexDirection={'column'} width={'100%'}>
-        <AdminNavbarLink brandText={getSecondLastPathSegment(window.location.pathname)}
-                         brandTextS={getLastPathSegment(window.location.pathname)}
-                         mainTextColor={mainText}
-                         secondaryTextColor={secondaryText}
-                         navbarIconColor={navbarIcon}
-                         backgroundColor={backGroundColor}/>
+        <AdminNavbarLink
+          brandText={getSecondLastPathSegment(window.location.pathname)}
+          brandTextS={getLastPathSegment(window.location.pathname)}
+          mainTextColor={mainText}
+          secondaryTextColor={secondaryText}
+          navbarIconColor={navbarIcon}
+          backgroundColor={backGroundColor}
+        />
         <Box>
           <Flex direction="column" pt={{ base: '120px', md: '75px' }}>
             {loading && (
@@ -91,7 +103,14 @@ export const EmployeeTable = () => {
                 <Employees
                   title={'Registered Employees'}
                   data={employeeData}
-                  captions={['Username', 'Email', 'Password','Role', 'Edit', 'Delete','DropBox']}
+                  captions={[
+                    'Username',
+                    'Email',
+                    'Password',
+                    'Role',
+                    'Edit',
+                    'Delete',
+                  ]}
                 />
               )
             ) : (
@@ -101,7 +120,7 @@ export const EmployeeTable = () => {
           <Flex justify={'end'} mt={2} mb={2}>
             <HStack spacing={2}>
               <Button
-                onClick={() => handleButtonClicked(currentPage-1)}
+                onClick={() => handleButtonClicked(currentPage - 1)}
                 isDisabled={currentPage === 1}
                 colorScheme="teal"
                 leftIcon={<ArrowBackIcon />}
@@ -111,7 +130,7 @@ export const EmployeeTable = () => {
               {pageNumbers.map((number) => (
                 <Button
                   key={number}
-                  onClick={()=>handleButtonClicked(number)}
+                  onClick={() => handleButtonClicked(number)}
                   colorScheme="teal"
                   variant={currentPage === number ? 'solid' : 'outline'}
                 >
@@ -119,7 +138,7 @@ export const EmployeeTable = () => {
                 </Button>
               ))}
               <Button
-                onClick={() => handleButtonClicked(currentPage +1 )}
+                onClick={() => handleButtonClicked(currentPage + 1)}
                 isDisabled={currentPage === totalPages}
                 colorScheme="teal"
                 rightIcon={<ArrowForwardIcon />}
@@ -129,9 +148,7 @@ export const EmployeeTable = () => {
             </HStack>
           </Flex>
         </Box>
-
       </Box>
-
     </React.Fragment>
   );
 };

@@ -26,11 +26,10 @@ interface TableDataRowProps {
   password: string;
   role: string;
   id: string;
-  link: string | null;
 }
 
 export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
-  const { name, email, password, role, id, link } = props;
+  const { name, email, password, role, id} = props;
   const toast = useToast();
   const textColor = useColorModeValue('gray.400', 'white');
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -132,18 +131,6 @@ export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
       <Td>
         <Button leftIcon={<DeleteIcon />} colorScheme="teal" variant="solid" onClick={onOpen}>
           Delete
-        </Button>
-      </Td>
-      <Td>
-        <Button
-          colorScheme={'teal'}
-          leftIcon={<AiFillDropboxCircle />}
-          isDisabled={link === null}
-          onClick={() => {
-            window.open(link!, '_blank');
-          }}
-        >
-          Dropbox
         </Button>
       </Td>
     </React.Fragment>

@@ -2,19 +2,20 @@
 import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
-  FormErrorMessage,
-  useToast, Select,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Select,
+  useToast,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -24,14 +25,14 @@ interface FormData {
   name: string;
   email: string;
   password: string;
-  role:string;
-  id:string;
+  role: string;
+  id: string;
 }
 
 interface AuthModalProps {
   isOpenModel: boolean;
   onCloseModel: () => void;
-  data: FormData
+  data: FormData;
 }
 
 const schema = yup.object().shape({
@@ -44,14 +45,14 @@ const schema = yup.object().shape({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .required('Password is required'),
-  role:yup.string().required('Role is required'),
-  id:yup.string().required('Id is required'),
+  role: yup.string().required('Role is required'),
+  id: yup.string().required('Id is required'),
 });
 
 export const Model: React.FC<AuthModalProps> = ({
   isOpenModel,
   onCloseModel,
-  data
+  data,
 }) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLInputElement>(null);
@@ -64,25 +65,25 @@ export const Model: React.FC<AuthModalProps> = ({
   } = useForm<FormData>({ resolver: yupResolver(schema) });
   const token = localStorage.getItem('authToken');
   const onSubmit = async (data: FormData) => {
-    try{
+    try {
       const response = await axios.patch(
-        'http://localhost:3002/api/update-employee',
+        'http://localhost:3002/api/updateEmployee',
         {
           email: data.email,
           name: data.name,
           password: data.password,
           role: data.role,
-          id: data.id
+          id: data.id,
         },
         {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-          }
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
         }
       );
-      if(response.status === 200){
+      if (response.status === 200) {
         toast({
           title: 'Update Status.',
           description: 'Successfully Update the Employee Information.',
@@ -94,11 +95,11 @@ export const Model: React.FC<AuthModalProps> = ({
       }
       reset();
       onCloseModel();
-    }catch (error){
+    } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({
           title: 'Employee Update Status.',
-          description: error.response?.data.error.errors[0].message,
+          description: error?.response?.data?.message,
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -108,7 +109,6 @@ export const Model: React.FC<AuthModalProps> = ({
         console.error('An unexpected error occurred', error);
       }
     }
-
   };
 
   return (
@@ -136,7 +136,6 @@ export const Model: React.FC<AuthModalProps> = ({
               </FormErrorMessage>
             </FormControl>
             <Input type="hidden" defaultValue={data.id} {...register('id')} />
-
 
             <FormControl mt={4} isInvalid={!!errors.email}>
               <FormLabel>Email</FormLabel>
@@ -175,7 +174,7 @@ export const Model: React.FC<AuthModalProps> = ({
             </FormControl>
 
             <ModalFooter>
-              <Button colorScheme="teal"  variant="solid" mr={3} type="submit">
+              <Button colorScheme="teal" variant="solid" mr={3} type="submit">
                 Save
               </Button>
               <Button onClick={onCloseModel}>Cancel</Button>

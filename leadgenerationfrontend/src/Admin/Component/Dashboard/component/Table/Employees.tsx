@@ -2,19 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '../../../../../Components/Card/Card';
 import CardHeader from '../../../../../Components/Card/CardHeader';
 import {
-  Box, Button, Checkbox,
+  Box,
+  Button,
+  Checkbox,
   IconButton,
   Input,
   InputGroup,
   InputLeftElement,
   Table,
   Tbody,
+  Text,
   Th,
   Thead,
   Tr,
-  useColorModeValue, useToast,
+  useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
-import { Text } from '@chakra-ui/react';
 import { CardBody } from '../../../../../Components/Card/Cardbody';
 import { TableDataRow } from './TableDataRow';
 import { DeleteIcon, SearchIcon } from '@chakra-ui/icons';
@@ -25,15 +28,16 @@ interface DataRow {
   email: string;
   username: string;
   password: string;
-  role:string
-  id:string
-  link:string
+  role: string;
+  id: string;
 }
+
 interface cardTableProps {
   title: string;
   data: DataRow[];
   captions: string[];
 }
+
 export const Employees: React.FC<cardTableProps> = ({
   title,
   data,
@@ -50,13 +54,13 @@ export const Employees: React.FC<cardTableProps> = ({
   const [employees, setEmployees] = useState(data);
   const toast = useToast();
 
-  const filteredData = employees.filter((row) =>
-    row.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    row.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    row.password.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredData = employees.filter(
+    (row) =>
+      row.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.password.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  useEffect(() => {
-  }, [employees]);
+  useEffect(() => {}, [employees]);
 
   const handleSelectAll = (isChecked: boolean) => {
     if (isChecked) {
@@ -65,7 +69,6 @@ export const Employees: React.FC<cardTableProps> = ({
       setSelectedEmployees([]);
     }
   };
-
 
   const handleSelectEmployee = (id: string) => {
     setSelectedEmployees((prevSelected) =>
@@ -77,10 +80,13 @@ export const Employees: React.FC<cardTableProps> = ({
 
   const handleDeleteSelected = async () => {
     try {
-      const response = await axios.post('http://localhost:3002/api/deleteSelectedEmployees', {
-        employeeIds: selectedEmployees, // Pass the selected employee IDs to the backend
-      });
-      if(response.status === 200){
+      const response = await axios.post(
+        'http://localhost:3002/api/deleteSelectedEmployees',
+        {
+          employeeIds: selectedEmployees, // Pass the selected employee IDs to the backend
+        }
+      );
+      if (response.status === 200) {
         toast({
           title: 'Employee Status.',
           description: ' Employee Successfully Added.',
@@ -91,7 +97,9 @@ export const Employees: React.FC<cardTableProps> = ({
         });
       }
       setEmployees((prevEmployees) =>
-        prevEmployees.filter((employee) => !selectedEmployees.includes(employee.id))
+        prevEmployees.filter(
+          (employee) => !selectedEmployees.includes(employee.id)
+        )
       );
       setSelectedEmployees([]);
       setSelectedEmployees([]);
@@ -99,7 +107,6 @@ export const Employees: React.FC<cardTableProps> = ({
       console.error('Error deleting selected employees:', error);
     }
   };
-
 
   return (
     <React.Fragment>
@@ -118,7 +125,7 @@ export const Employees: React.FC<cardTableProps> = ({
           <Text fontSize="xl" color={textColor} fontWeight="bold">
             {title}
           </Text>
-          <Box display={'flex'} justifyContent={'end'} >
+          <Box display={'flex'} justifyContent={'end'}>
             <Button
               leftIcon={<DeleteIcon />}
               colorScheme="teal"
@@ -129,13 +136,13 @@ export const Employees: React.FC<cardTableProps> = ({
             >
               Delete Selected
             </Button>
-            <Button
-              leftIcon={<DeleteIcon />}
-              colorScheme="teal"
-              variant="solid"
-            >
-              Delete All Employees
-            </Button>
+            {/*<Button*/}
+            {/*  leftIcon={<DeleteIcon />}*/}
+            {/*  colorScheme="teal"*/}
+            {/*  variant="solid"*/}
+            {/*>*/}
+            {/*  Delete All Employees*/}
+            {/*</Button>*/}
 
             <InputGroup
               cursor="pointer"
@@ -182,11 +189,10 @@ export const Employees: React.FC<cardTableProps> = ({
                 placeholder="Type here..."
                 borderRadius="inherit"
                 value={searchQuery}
-                onChange={(e)=> setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </InputGroup>
           </Box>
-
         </CardHeader>
         <CardBody>
           <Table variant="simple" color={textColor}>
@@ -204,10 +210,7 @@ export const Employees: React.FC<cardTableProps> = ({
                 </Th>
                 {captions.map((caption, idx) => {
                   return (
-                    <Th
-                      color="gray.400"
-                      key={idx}
-                    >
+                    <Th color="gray.400" key={idx}>
                       {caption}
                     </Th>
                   );
@@ -230,7 +233,6 @@ export const Employees: React.FC<cardTableProps> = ({
                       password={row.password}
                       role={row.role}
                       id={row.id}
-                      link={row.link}
                     />
                   </Tr>
                 );

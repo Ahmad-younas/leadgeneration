@@ -20,12 +20,12 @@ interface GoogleTokens {
 export const refreshGoogleTokens = async (
   googleTokens: GoogleTokens,
 ): Promise<GoogleTokens> => {
+  Logger.info("RefreshGoogleToken Function Called");
   oauth2Client.setCredentials(googleTokens);
 
   // Check if the access token has expired
   if (googleTokens.expiry_date && Date.now() > googleTokens.expiry_date) {
     Logger.info("Access token expired. Refreshing token...");
-    console.log("GoogleToken", googleTokens);
     const newTokens = await oauth2Client.refreshAccessToken();
     oauth2Client.setCredentials(newTokens.credentials);
 

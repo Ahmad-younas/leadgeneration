@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { GrEdit, GrView } from 'react-icons/gr';
+import { GrDropbox, GrEdit, GrView } from 'react-icons/gr';
 import {
   Box,
   Button,
@@ -39,6 +39,7 @@ interface Jobs {
   address: string;
   id: number;
   user_id: number;
+  dropboxFolderLink: string;
 }
 
 interface MetaData {
@@ -366,6 +367,21 @@ export const AllJobsTable = () => {
       )
   );
 
+  const openDropboxLink = (item: Jobs) => {
+    if (item.dropboxFolderLink) {
+      window.open(item.dropboxFolderLink, '_blank');
+    } else {
+      toast({
+        title: 'Dropbox Link',
+        position: 'top-right',
+        description: 'Admin did not create the Dropbox link against this job',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <React.Fragment>
       <ViewEmployeeJob
@@ -506,6 +522,15 @@ export const AllJobsTable = () => {
                         onClick={() =>
                           fetchEmployeeInfoForEdit(item.id, item.user_id)
                         }
+                      />
+                      <IconButton
+                        aria-label={'dropbox'}
+                        icon={<GrDropbox />}
+                        color="teal"
+                        onClick={() => {
+                          openDropboxLink(item);
+                        }}
+                        marginX={'5px'}
                       />
                     </Td>
                   </Tr>

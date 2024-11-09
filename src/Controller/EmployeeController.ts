@@ -5,7 +5,6 @@ import Logger from "../logger";
 import { Sequelize } from "sequelize-typescript";
 import { Op, WhereOptions } from "sequelize";
 import { google, sheets_v4 } from "googleapis";
-import { Dropbox } from "dropbox";
 import { createSpreadsheet } from "../utils/spreadSheetService";
 import dotenv from "dotenv";
 import { refreshGoogleTokens } from "../utils/checkAndRefreshToken";
@@ -35,15 +34,6 @@ interface CustomRequest extends Request {
   user?: User;
 }
 
-//This function Get all the Jobs
-export const getLeads = (req: Request, res: Response) => {
-  res.send("Leads Add Successfully").status(201);
-};
-export const updateLeads = (req: Request, res: Response) => {
-  res.send("Update Add Successfully").status(201);
-};
-
-// Send Data to Google Sheet After Authorization
 async function appendToSheet(
   data: (string | number)[],
   tokens: GoogleTokens,
@@ -187,18 +177,15 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
         .status(404)
         .json({ error: "Employee not authenticated with Google" });
     }
-
     if (!googleToken) {
       throw new Error("Google tokens are missing for the employee.");
     }
     // Check if the employee already has a spreadsheet
     let spreadsheetId = employee.dataValues.spreadsheetId;
-
     // If the spreadsheet doesn't exist, create a new one
     if (!spreadsheetId) {
       Logger.info("spreadSheet is empty");
       spreadsheetId = await createSpreadsheet(googleToken);
-      console.log("spreadsheetID", spreadsheetId);
       await Employee.update(
         { spreadsheetId },
         { where: { id: employee.dataValues.id } },
@@ -210,7 +197,20 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
         ? JSON.parse(employee.dataValues.googleTokens)
         : employee.dataValues.googleTokens;
 
-    googleTokens = await refreshGoogleTokens(googleTokens);
+    if (googleTokens.expiry_date != undefined) {
+      if (Date.now() >= googleTokens.expiry_date) {
+        googleTokens = await refreshGoogleTokens(googleTokens);
+        const googleTokensString = JSON.stringify(googleTokens);
+        await Employee.update(
+          { googleTokens: googleTokensString },
+          {
+            where: { id: id },
+          },
+        );
+      }
+    } else {
+      logger.error("Token expiry date is undefined.");
+    }
 
     const dataArray = [
       title,
@@ -244,7 +244,6 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
       googleTokens,
       spreadsheetId,
     );
-    console.log("sheetRowNumber", sheetRowNumber);
     await Job.create({
       title,
       firstName,
@@ -274,14 +273,10 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
       waterType,
       epcBand,
     });
-
-    const user = await Employee.findByPk(id);
-    if (user?.dataValues.link) {
-      logger.info("Job created Successfully");
-      res.status(201).json({ message: "Job added successfully" });
-    } else {
-      res.status(204).json({ message: "Link Not Found" });
-    }
+    logger.info("Job Successfully added into Database and GoogleSheet");
+    res.status(201).json({
+      message: "Job Successfully added into Database and GoogleSheet",
+    });
   } catch (err) {
     if (err instanceof Error) {
       console.log("error", err);
@@ -291,6 +286,7 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
   }
 };
 export const getJobInfoOfEmployee = async (req: Request, res: Response) => {
+  logger.info("getJobInfoOfEmployee function Called");
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const offset = (page - 1) * limit;
@@ -318,6 +314,7 @@ export const getJobInfoOfEmployee = async (req: Request, res: Response) => {
         "serviceType",
         "assessmentDate",
         "notes",
+        "dropboxFolderLink",
       ],
       where: {
         user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -353,6 +350,7 @@ export const getJobInfoOfEmployeeWithPagination = async (
   req: Request,
   res: Response,
 ) => {
+  logger.info("getJobInfoOfEmployeeWithPagination function Called");
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const offset = (page - 1) * limit;
@@ -380,6 +378,7 @@ export const getJobInfoOfEmployeeWithPagination = async (
         "serviceType",
         "assessmentDate",
         "notes",
+        "dropboxFolderLink",
       ],
       where: {
         user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -415,6 +414,7 @@ export const getIndividualEmployeeWithJobInfo = async (
   req: Request,
   res: Response,
 ) => {
+  logger.info("getIndividualEmployeeWithJobInfo function Called");
   const { employeeJobId, employeeId } = req.body;
   try {
     // Fetch users with associated employee jobs
@@ -443,18 +443,15 @@ export const getMonthlyJobCountOfEmployee = async (
   req: Request,
   res: Response,
 ) => {
-  // Extract the userId and year from the request query parameters
+  logger.info("getMonthlyJobCountOfEmployee function Called");
   const id = parseInt(req.query.id as string);
-
   try {
-    // Ensure userId and year are provided and valid
     if (!id) {
       return res.status(400).json({
         message: "Missing 'userId' or 'year' query parameter",
       });
     }
 
-    // Perform the Sequelize query to get the monthly job count
     const monthlyJobCounts = await Month.findAll({
       attributes: [
         "month_name",
@@ -478,9 +475,7 @@ export const getMonthlyJobCountOfEmployee = async (
       group: ["Month.month_name"], // Group by the month_name column
       raw: true, // Use raw SQL for more control
     });
-    console.log(monthlyJobCounts);
 
-    // Send the result as a response
     res.status(200).json(monthlyJobCounts);
   } catch (error) {
     console.error("Error fetching monthly job count:", error);
@@ -492,8 +487,8 @@ export const getMonthlyJobCountOfEmployee = async (
 };
 
 export const getStatusCountOfJobs = async (req: Request, res: Response) => {
+  logger.info("getStatusCountOfJobs function Called");
   const id = parseInt(req.query.user_id as string);
-
   try {
     // Ensure userId and year are provided and valid
     if (!id) {
@@ -501,7 +496,6 @@ export const getStatusCountOfJobs = async (req: Request, res: Response) => {
         message: "Missing 'userId' or 'year' query parameter",
       });
     }
-
     // Perform the Sequelize query to get the monthly job count
     const monthlyJobCounts = await Job.findAll({
       attributes: [
@@ -529,23 +523,20 @@ export const getStatusCountOfJobs = async (req: Request, res: Response) => {
 };
 // Controller function to get employee jobs for Excel Sheet
 export const getEmployeeJobs = async (req: Request, res: Response) => {
+  logger.info("getEmployeeJobs function Called");
   const id = req.query.id as string;
-
   try {
-    // Fetch employee jobs where user_id is 3
     const employeeJobs = await Job.findAll({
       where: {
         user_id: id, // Use req.params or req.body to dynamically set user_id if needed
       },
     });
 
-    // Check if jobs were found
     if (employeeJobs.length === 0) {
       return res
         .status(404)
         .json({ message: "No employee jobs found for the specified user." });
     }
-
     // Respond with the fetched jobs
     res.status(200).json(employeeJobs);
   } catch (error) {
@@ -558,56 +549,12 @@ export const getEmployeeJobs = async (req: Request, res: Response) => {
   }
 };
 
-// Create a folder for the user
-export const createDropboxFolder = async (req: Request, res: Response) => {
-  try {
-    const { accessToken, employeeId } = req.body; // Use the access token obtained previously
-
-    // Initialize Dropbox client with the user's Access Token
-    const dbx = new Dropbox({ accessToken });
-
-    // Create a unique folder name based on employee ID
-    const folderName = `/Employee_${employeeId}_Folder`;
-
-    // Create the folder in Dropbox
-    const folderResponse = await dbx.filesCreateFolderV2({ path: folderName });
-
-    res.status(201).json({
-      message: "Folder created successfully",
-      folderId: folderResponse.result.metadata.id,
-    });
-  } catch (error) {
-    console.error("Error creating Dropbox folder:", error);
-    res.status(500).json({ error: "Failed to create Dropbox folder" });
-  }
-};
-
 export const getJobStatusById = async (req: CustomRequest, res: Response) => {
+  logger.info("getJobStatusById function Called");
   const id = req.user?.id;
   try {
     const usersWithJobs = await Job.findAll({
-      attributes: [
-        "id",
-        "title",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "email",
-        "contactNumber",
-        "address",
-        "postcode",
-        "landlordName",
-        "landlordContactNumber",
-        "landlordEmail",
-        "heatingType",
-        "propertyType",
-        "epcRating",
-        "serviceType",
-        "assessmentDate",
-        "notes",
-        "status",
-        "job_creation_date",
-      ],
+      attributes: ["id", "title", "status", "job_creation_date"],
       where: {
         user_id: id, // Replace '1' with the actual user ID you are filtering by
       },

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Spinner, Box, Center, Text } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { Box, Center, Spinner, Text } from '@chakra-ui/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Lottie from 'lottie-react';
-import Animation from "../assets/Animation.json";
+import Animation from '../assets/Animation.json';
+
 export const DropboxCallback: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showLottie, setShowLottie] = useState(false);
@@ -13,31 +14,27 @@ export const DropboxCallback: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Function to extract the access token from the URL hash
     const extractAccessToken = () => {
-      const hash = location.hash; // Get the hash from the URL (e.g., #access_token=...)
-      const params = new URLSearchParams(hash.substring(1)); // Remove the leading "#" and parse the hash
-      const accessToken = params.get('access_token');// Get the access token
-
+      const params = new URLSearchParams(location.search); // Remove the leading "#" and parse the hash
+      const code = params.get('code'); // Get the access token
       const token = localStorage.getItem('authToken');
-
-      if (accessToken) {
-        setAccessToken(accessToken); // Set the access token state
-        console.log('Access Token:', accessToken);
-
-        // Send the access token to the backend using Axios
+      if (code) {
+        setAccessToken(code); // Set the access token state
         axios
-          .post('http://localhost:3002/api/dropbox/callback', { accessToken},{
-            headers: {
-              Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-            },
-          })
+          .post(
+            'http://localhost:3002/api/dropbox/callback',
+            { code },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+              },
+            }
+          )
           .then((response) => {
-            console.log('Token saved successfully:', response.data);
             setLoading(false);
             setShowLottie(true);
             setTimeout(() => {
-              navigate('/admin/addjobs');
+              navigate('/admin/setting');
             }, 2000);
             // Redirect to a success page or handle as needed
           })
@@ -47,7 +44,6 @@ export const DropboxCallback: React.FC = () => {
             setLoading(false);
           });
       } else {
-        console.error('No access token found in URL');
         setError('No access token found.');
         setLoading(false);
       }
@@ -77,7 +73,7 @@ export const DropboxCallback: React.FC = () => {
             style={{ width: 200, height: 200 }}
           />
         </Center>
-      ): (
+      ) : (
         <Box p={4}>
           {accessToken && !error ? (
             <Text fontSize="xl" mb={4} color="green.500">

@@ -12,7 +12,7 @@ interface UserAttributes {
   resetPasswordExpires?: Date | null;
   googleTokens?: string;
   spreadsheetId?: string;
-  link?: string;
+  dropboxAccessToken?: string;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
@@ -31,7 +31,7 @@ class Employee
   public resetPasswordExpires?: Date | null;
   public googleTokens?: string;
   public spreadsheetId?: string;
-  public link?: string;
+  public dropboxAccessToken?: string;
 
   public getId(): number {
     return this.id;
@@ -111,7 +111,7 @@ Employee.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    link: {
+    dropboxAccessToken: {
       type: DataTypes.TEXT,
       allowNull: true,
     },

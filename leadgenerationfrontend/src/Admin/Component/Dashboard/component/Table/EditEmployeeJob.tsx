@@ -1,31 +1,45 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalCloseButton,
-  ModalBody,
   Box,
-  FormControl,
   Button,
+  FormControl,
+  FormErrorMessage,
   FormLabel,
-  Input,
   Heading,
-  Stack,
-  Spacer,
+  Input,
   InputGroup,
-  InputLeftElement, InputLeftAddon, Textarea, Select, FormErrorMessage, useToast,
+  InputLeftAddon,
+  InputLeftElement,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Select,
+  Spacer,
+  Stack,
+  Textarea,
+  useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAddressBook, faCalendarDays, faUser } from '@fortawesome/free-solid-svg-icons';
+import {
+  faAddressBook,
+  faCalendarDays,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
 import { EmailIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 
 interface Data {
-  id:string;
+  id: string;
   title: string;
   firstName: string;
   lastName: string;
@@ -46,12 +60,12 @@ interface Data {
   serviceType: string;
   assessmentDate: string;
   notes: string;
-  status:string;
-  year:string;
-  month:string;
-
+  status: string;
+  year: string;
+  month: string;
+  epcBand: string;
+  waterType: string;
 }
-
 
 interface AuthModalProps {
   isOpenModel: boolean;
@@ -62,44 +76,41 @@ interface AuthModalProps {
 // Validation schema using yup
 const schema = yup.object().shape({
   title: yup.string(),
-  firstName: yup.string().required("First name is required"),
+  firstName: yup.string().required('First name is required'),
   lastName: yup.string(),
-  dateOfBirth: yup
-    .string(),
-  email: yup
-    .string()
-    .email('Invalid email address'),
+  dateOfBirth: yup.string(),
+  email: yup.string().email('Invalid email address'),
   contactNumber: yup.string(),
   address: yup.string(),
   postcode: yup.string(),
   landlordName: yup.string(),
-  landlordContactNumber: yup
-    .string(),
-  landlordEmail: yup
-    .string()
-    .email('Invalid email address'),
+  landlordContactNumber: yup.string(),
+  landlordEmail: yup.string().email('Invalid email address'),
   agentName: yup.string(),
   agentContactNumber: yup.string(),
-  agentEmail: yup
-    .string()
-    .email('Invalid email address'),
+  agentEmail: yup.string().email('Invalid email address'),
   heatingType: yup.string(),
   propertyType: yup.string(),
   epcRating: yup.string(),
   serviceType: yup.string(),
-  assessmentDate: yup
-    .string(),
+  assessmentDate: yup.string(),
   notes: yup.string(),
   status: yup.string(),
   month: yup.string(),
   year: yup.string(),
-  id:yup.string()
+  id: yup.string(),
+  epcBand: yup.string(),
+  waterType: yup.string(),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
-
-export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onCloseModel, data }) => {
+export const EditEmployeeJob: React.FC<AuthModalProps> = ({
+  isOpenModel,
+  onCloseModel,
+  data,
+}) => {
+  const token = localStorage.getItem('authToken');
   const initialRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const finalRef = useRef<HTMLInputElement>(null);
@@ -115,7 +126,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
 
   useEffect(() => {
     if (isOpenModel && data) {
-      setValue('id',data.id);
+      setValue('id', data.id);
       setValue('title', data.title);
       setValue('firstName', data.firstName);
       setValue('lastName', data.lastName);
@@ -136,21 +147,26 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
       setValue('serviceType', data.serviceType);
       setValue('assessmentDate', data.assessmentDate);
       setValue('notes', data.notes);
-      setValue('month',data.month);
-      setValue('year',data.year);
-      setValue('status',data.status);
+      setValue('month', data.month);
+      setValue('year', data.year);
+      setValue('status', data.status);
+      setValue('epcBand', data.epcBand);
+      setValue('waterType', data.waterType);
     }
-  }, [isOpenModel,data, setValue]);
+  }, [isOpenModel, data, setValue]);
 
-  const token = localStorage.getItem('authToken');
   const onSubmit = async (formData: FormData) => {
     try {
-      const response = await axios.put('http://localhost:3002/api/updateEmployeeJob', formData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+      const response = await axios.put(
+        'http://localhost:3002/api/updateEmployeeJob',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
         }
-      });
+      );
       if (response.status === 200) {
         toast({
           title: 'Job Status.',
@@ -168,12 +184,17 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
   };
 
   return (
-    <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpenModel} onClose={onCloseModel}>
+    <Modal
+      initialFocusRef={initialRef}
+      finalFocusRef={finalRef}
+      isOpen={isOpenModel}
+      onClose={onCloseModel}
+    >
       <ModalOverlay />
-      <ModalContent maxWidth={"70%"}>
+      <ModalContent maxWidth={'70%'}>
         <ModalCloseButton />
         <ModalBody pb={6}>
-          <Box display='flex' justifyContent='center'>
+          <Box display="flex" justifyContent="center">
             <form onSubmit={handleSubmit(onSubmit)}>
               <Box
                 style={{
@@ -183,7 +204,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
               >
                 <Heading
                   pt={'4'}
-                  fontSize={"x-large"}
+                  fontSize={'x-large'}
                   display={'flex'}
                   justifyContent={'center'}
                   alignItems={'center'}
@@ -253,7 +274,9 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                         </FormErrorMessage>
                       </FormControl>
                       <FormControl isInvalid={!!errors.dateOfBirth}>
-                        <FormLabel htmlFor="dateOfBirth">Date of Birth</FormLabel>
+                        <FormLabel htmlFor="dateOfBirth">
+                          Date of Birth
+                        </FormLabel>
                         <InputGroup>
                           <InputLeftElement pointerEvents={'none'}>
                             <FontAwesomeIcon
@@ -457,7 +480,9 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     </Stack>
                   </Box>
                 </Box>
-                <Box style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
                   <Box
                     style={{
                       backgroundColor: 'white',
@@ -468,15 +493,20 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     }}
                   >
                     <Stack spacing={4}>
-                      <Heading fontSize={"x-large"}>Property Details Section</Heading>
+                      <Heading fontSize={'x-large'}>
+                        Property Details Section
+                      </Heading>
                       <FormControl isInvalid={!!errors.heatingType}>
-                        <FormLabel htmlFor="heatingType">Heating Type</FormLabel>
-                        <Select
-                          id="heatingType"
-                          {...register('heatingType')}
-                        >
-                          <option value="Central Heating">Central Heating</option>
-                          <option value="Electric Heating">Electric Heating</option>
+                        <FormLabel htmlFor="heatingType">
+                          Heating Type
+                        </FormLabel>
+                        <Select id="heatingType" {...register('heatingType')}>
+                          <option value="Central Heating">
+                            Central Heating
+                          </option>
+                          <option value="Electric Heating">
+                            Electric Heating
+                          </option>
                           <option value="Gas Heating">Gas Heating</option>
                           <option value="Other">Other</option>
                         </Select>
@@ -504,25 +534,31 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                         </FormErrorMessage>
                       </FormControl>
 
-                      <FormControl isInvalid={!!errors.epcRating}>
-                        <FormLabel htmlFor="epcRating">
-                          Current EPC Rating
+                      <FormControl isInvalid={!!errors.epcBand}>
+                        <FormLabel htmlFor="epcBand">
+                          {' '}
+                          Current EPC Band
                         </FormLabel>
                         <Select
-                          id="epcRating"
-                          {...register('epcRating')}
-                          defaultValue={data.epcRating}
+                          id="epcBand"
+                          placeholder="Select Band "
+                          {...register('epcBand')}
                         >
-                          <option value="A">A</option>
-                          <option value="B">B</option>
-                          <option value="C">C</option>
-                          <option value="D">D</option>
-                          <option value="E">E</option>
-                          <option value="F">F</option>
-                          <option value="G">G</option>
+                          <option value="High B">High B</option>
+                          <option value="Low B">Low B</option>
+                          <option value="High C">High C</option>
+                          <option value="Low C">Low C</option>
+                          <option value="High D">High D</option>
+                          <option value="Low D">Low D</option>
+                          <option value="High E">High E</option>
+                          <option value="Low E">Low E</option>
+                          <option value="High F">High F</option>
+                          <option value="Low F">Low F</option>
+                          <option value="High G">High G</option>
+                          <option value="Low G">Low G</option>
                         </Select>
                         <FormErrorMessage>
-                          {errors.epcRating?.message}
+                          {errors.epcBand?.message}
                         </FormErrorMessage>
                       </FormControl>
                     </Stack>
@@ -539,21 +575,25 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                     <Stack spacing={4}>
                       <Heading fontSize={'x-large'}>Measures Details</Heading>
                       <FormControl isInvalid={!!errors.serviceType}>
-                        <FormLabel htmlFor="serviceType">Service Type</FormLabel>
+                        <FormLabel htmlFor="serviceType">
+                          Service Type
+                        </FormLabel>
                         <Select
                           value={data.serviceType}
-                          id='serviceType'
+                          id="serviceType"
                           {...register('serviceType')}
                           defaultValue={data.serviceType}
                         >
-                          <option value='Loft Insulation'>Loft Insulation</option>
-                          <option value='Electric Storage Heater'>
-                            Electric Storage Heater
+                          <option value="Internal wall insulation">
+                            Internal wall insulation
                           </option>
-                          <option value='Solar PV'>Solar PV</option>
-                          <option value='Solar PV'>Solar PV</option>
-                          <option value='External'>External</option>
-                          <option value='Air Source Heating Pump'>Air Source Heating Pump</option>
+                          <option value="External wall insulation">
+                            External wall insulation
+                          </option>
+                          <option value="Air source heat pump">
+                            Air source heat pump
+                          </option>
+                          <option value="other">other</option>
                         </Select>
                         <FormErrorMessage>
                           {errors.serviceType?.message}
@@ -613,14 +653,14 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                       <FormControl isInvalid={!!errors.status}>
                         <FormLabel htmlFor="status">Job Status</FormLabel>
                         <Select
-                          id='status'
+                          id="status"
                           {...register('status')}
                           defaultValue={data.status}
                         >
-                          <option value='Submitted'>Submitted</option>
-                          <option value='Canceled'>Canceled</option>
-                          <option value='Insulated'>Insulated</option>
-                          <option value='Booked'>Booked</option>
+                          <option value="Submitted">Submitted</option>
+                          <option value="Canceled">Canceled</option>
+                          <option value="Insulated">Insulated</option>
+                          <option value="Booked">Booked</option>
                         </Select>
                         <FormErrorMessage>
                           {errors.status?.message}
@@ -628,6 +668,64 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({ isOpenModel, onClose
                       </FormControl>
                     </Stack>
                   </Box>
+                </Box>
+              </Box>
+
+              <Box style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: '15px',
+                    width: '100%',
+                    padding: '15px',
+                    margin: '15px 10px 10px 0px',
+                  }}
+                >
+                  <Stack spacing={4}>
+                    <Heading fontSize={'x-large'}>Water Heating Type</Heading>
+                    <FormControl isInvalid={!!errors.waterType}>
+                      <FormLabel htmlFor="WaterType">Water Type</FormLabel>
+                      <Select
+                        id="WaterType"
+                        placeholder="Select Water Type"
+                        {...register('waterType')}
+                      >
+                        <option value="Electric Instantaneous water Heater">
+                          Electric Instantaneous water Heater
+                        </option>
+                        <option value="Electric Immersion">
+                          Electric Immersion
+                        </option>
+                        <option value="From mains">From mains</option>
+                        <option value="Other">Other</option>
+                        <option value="Non">Non</option>
+                      </Select>
+
+                      <FormErrorMessage>
+                        {errors.waterType?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                    <FormControl isInvalid={!!errors.epcRating}>
+                      <FormLabel htmlFor="agentEmail">
+                        Current EPC Rating
+                      </FormLabel>
+                      <NumberInput max={100} min={0}>
+                        <NumberInputField
+                          id={'epcRating'}
+                          maxLength={2}
+                          placeholder={'Enter 1 to 100'}
+                          {...register('epcRating')}
+                        />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                      <FormErrorMessage>
+                        {errors.agentEmail?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                  </Stack>
                 </Box>
               </Box>
               <Button mt={4} colorScheme="teal" type="submit">

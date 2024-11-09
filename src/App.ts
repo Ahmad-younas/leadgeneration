@@ -4,7 +4,6 @@ import cors, { CorsOptions } from "cors";
 import adminRoutes from "./Routes/Admin";
 import EmployeeRoutes from "./Routes/Employee";
 import LoginRoutes from "./Routes/Login";
-import path from "node:path";
 
 const app = express();
 const corsOptions: CorsOptions = {
@@ -13,7 +12,7 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "../build")));
+// app.use(express.static(path.join(__dirname, "../build")));
 app.use(cors(corsOptions));
 app.use(express.json());
 

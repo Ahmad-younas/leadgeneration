@@ -22,13 +22,11 @@ export async function createSpreadsheet(
   tokens: string | Credentials,
 ): Promise<string> {
   Logger.info("CreateSpreadSheet Function called ");
-  console.log("Token", tokens);
   const oauth2Client = new google.auth.OAuth2({
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   });
   const parsedTokens = parseTokens(tokens);
-  console.log("parsedTokens", parsedTokens);
   oauth2Client.setCredentials(parsedTokens); // Use stored tokens from OAuth2
 
   const sheets: sheets_v4.Sheets = google.sheets({
@@ -58,9 +56,6 @@ export async function createSpreadsheet(
       Logger.info("Failed to create spreadsheet: Spreadsheet ID not found");
       throw new Error("Failed to create spreadsheet: Spreadsheet ID not found");
     }
-
-    console.log("Spreadsheet ID:", spreadsheetId);
-
     return spreadsheetId; // Return the ID for further use (e.g., store in database)
   } catch (error) {
     console.error("Error creating spreadsheet:", error);

@@ -7,16 +7,12 @@ import {
   getJobInfoOfEmployee,
   getJobInfoOfEmployeeWithPagination,
   getJobStatusById,
-  getLeads,
   getMonthlyJobCountOfEmployee,
   getStatusCountOfJobs,
-  updateLeads,
 } from "../Controller/EmployeeController";
 
 const router = express.Router();
-router.get("/dashboard", authenticateJWT, getLeads, authorizeRole("employee"));
 router.post("/add-job", authenticateJWT, addLeads, authorizeRole("employee"));
-router.post("/updateLeads", updateLeads, authorizeRole("employee"));
 router.get(
   "/getJobInfoOfEmployee/:id",
   getJobInfoOfEmployee,

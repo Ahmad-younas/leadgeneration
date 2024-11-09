@@ -30,6 +30,7 @@ interface employeeJob {
   rowNumber: number;
   epcBand: string;
   waterType: string;
+  dropboxFolderLink?: string;
 }
 
 interface employeeJobsAttribute extends Optional<employeeJob, "id"> {}
@@ -66,6 +67,7 @@ class Job
   public rowNumber!: number;
   public epcBand!: string;
   public waterType!: string;
+  public dropboxFolderLink!: string;
 }
 
 Job.init(
@@ -187,6 +189,10 @@ Job.init(
     waterType: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    dropboxFolderLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

@@ -7,6 +7,7 @@ import {
   List,
   ListItem,
   UnorderedList,
+  useToast,
 } from '@chakra-ui/react';
 import { ProfileModal } from '../../../../Components/Profile/ProfileModel';
 import { LogoutIcon } from '../../../../Components/Icons/Icons';
@@ -14,11 +15,54 @@ import { EditIcon } from '@chakra-ui/icons';
 import { logout } from '../../../../redux/authSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../../redux/store';
+import { FaDropbox } from 'react-icons/fa';
+import axios from 'axios';
 
 export const Setting = () => {
   const [isOpenModel, setIsOpenModel] = useState<boolean>(false);
   const onCloseModel = () => setIsOpenModel(false);
   const dispatch = useDispatch<AppDispatch>();
+  const token = localStorage.getItem('authToken');
+  const toast = useToast();
+  const authWithDropBox = async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost:3002/api/authWithDropBox',
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 201) {
+        toast({
+          title: 'DropBox.',
+          description: 'Already authenticated With Dropbox.',
+          status: 'warning',
+          duration: 5000,
+          isClosable: true,
+          position: 'top-right',
+        });
+      } else if (response.status === 204) {
+        await initiateDropboxAuth();
+      }
+    } catch (error) {}
+  };
+
+  const initiateDropboxAuth = async () => {
+    try {
+      // Fetch the Dropbox authentication URL from the backend using Axios
+      const response = await axios.get(
+        'http://localhost:3002/api/dropbox/auth-url'
+      );
+      // Redirect the user to the Dropbox authorization page
+      window.location.href = response.data.url; // This triggers the OAuth flow
+    } catch (error) {
+      console.error('Error fetching Dropbox Auth URL:', error);
+    }
+  };
   return (
     <React.Fragment>
       <ProfileModal isOpen={isOpenModel} onClose={onCloseModel} />
@@ -64,8 +108,8 @@ export const Setting = () => {
                 Authenticate with dropbox
               </Heading>
               <Button
-                leftIcon={<LogoutIcon />}
-                onClick={() => dispatch(logout())}
+                leftIcon={<FaDropbox />}
+                onClick={authWithDropBox}
                 colorScheme="teal"
                 size="sm"
                 ml={4}

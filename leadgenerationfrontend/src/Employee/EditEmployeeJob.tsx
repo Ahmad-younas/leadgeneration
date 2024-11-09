@@ -708,7 +708,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
                         </FormControl>
                         <FormControl isInvalid={!!errors.epcRating}>
                           <FormLabel htmlFor="agentEmail">
-                            Current EPC
+                            Current EPC Rating
                           </FormLabel>
                           <NumberInput max={100} min={0}>
                             <NumberInputField
@@ -729,7 +729,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
                       </Stack>
                     </Box>
                   </Box>
-                </Box>
+                  </Box>
                 <Button mt={4} colorScheme="teal" type="submit">
                   Submit
                 </Button>
