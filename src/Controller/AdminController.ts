@@ -602,7 +602,7 @@ export const updateEmployee = async (req: CustomRequest, res: Response) => {
   const { id, name, email, password, role } = req.body;
   try {
     const hashedPassword = encryptedPassword(password);
-    const updateEmployee = await Employee.update(
+    await Employee.update(
       {
         username: name,
         email: email,

@@ -1,7 +1,6 @@
 import CryptoJS from 'crypto-js';
 
 const encryptState = (state: any) => {
-  console.log('secret key: ', process.env.SECRET_KEY);
   try {
     const serializedState = JSON.stringify(state);
     return CryptoJS.AES.encrypt(

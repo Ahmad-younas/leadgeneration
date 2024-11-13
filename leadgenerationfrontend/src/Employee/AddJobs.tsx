@@ -29,7 +29,6 @@ import {
 } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import { EmailIcon } from '@chakra-ui/icons';
 import { logout } from '../redux/authSlice';
@@ -43,6 +42,7 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { AdminNavbarLink } from '../Admin/Component/Dashboard/component/Table/AdminNavbarLink';
+import { ENDPOINTS } from '../utils/apiConfig';
 
 const schema = yup.object().shape({
   title: yup.string(),
@@ -76,7 +76,6 @@ export const AddJobs: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const toast = useToast();
   const dispatch = useDispatch<AppDispatch>();
-  const navigation = useNavigate();
 
   const backGroundColor = useColorModeValue('white', 'white');
   const navbarIcon = useColorModeValue('gray.500', 'gray.200');
@@ -100,16 +99,12 @@ export const AddJobs: React.FC = () => {
       ...data,
     };
     try {
-      const response = await axios.post(
-        'http://localhost:3002/api/add-job',
-        newData,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
-        }
-      );
+      const response = await axios.post(ENDPOINTS.addJob, newData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      });
       if (response.status === 201) {
         toast({
           title: 'Job Status.',
@@ -126,11 +121,23 @@ export const AddJobs: React.FC = () => {
       console.log('error', error);
       if (axios.isAxiosError(error)) {
         if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+        if (
           error?.response?.data.error ===
           'Employee not authenticated with Google'
         ) {
+          console.log('ENDPOINTS.authGoogle', ENDPOINTS.authGoogle);
           axios
-            .get('http://localhost:3002/api/auth/google')
+            .get(ENDPOINTS.authGoogle, {
+              withCredentials: true,
+              headers: {
+                Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+              },
+            })
             .then((response) => {
               const { url } = response.data;
               window.location.href = url;
@@ -145,11 +152,12 @@ export const AddJobs: React.FC = () => {
                 console.error('Unexpected error:', error);
               }
             });
-        } else if (error?.response?.status === 403) {
+        } else if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
           dispatch(logout());
         }
-        console.log('error', error?.response?.status);
-        console.log('error', error?.response?.data.error);
       } else {
         if (error instanceof Error) {
           console.error('Error message:', error.message);

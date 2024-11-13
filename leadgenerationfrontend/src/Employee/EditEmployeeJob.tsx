@@ -38,6 +38,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { EmailIcon } from '@chakra-ui/icons';
 import axios from 'axios';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { logout } from '../redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 interface Data {
   id: string;
@@ -113,6 +116,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
   const initialRef = useRef<HTMLInputElement>(null);
   const [Loading, setLoading] = useState(false);
   const toast = useToast();
+  const dispatch = useDispatch();
   const finalRef = useRef<HTMLInputElement>(null);
   const {
     register,
@@ -158,7 +162,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
     try {
       setLoading(true);
       const response = await axios.put(
-        'http://localhost:3002/api/updateEmployeeJob',
+        ENDPOINTS.updateEmployeeJob,
         formData,
         {
           headers: {
@@ -179,6 +183,11 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
         onCloseModel();
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error?.response?.status === 403 || error?.response?.status === 401 ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error updating employee job:', error);
     } finally {
       setLoading(false);

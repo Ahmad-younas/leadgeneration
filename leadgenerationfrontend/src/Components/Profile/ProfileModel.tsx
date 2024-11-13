@@ -21,6 +21,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
+import { ENDPOINTS } from '../../utils/apiConfig';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/authSlice';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -54,7 +57,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const finalRef = useRef<HTMLInputElement>(null);
   const token = localStorage.getItem('authToken');
   const toast = useToast();
-
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [show, setShow] = React.useState(false);
   const handleClick = () => setShow(!show);
@@ -83,20 +86,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       const fetchData = async () => {
         try {
           setLoading(true);
-          const response = await axios.get(
-            'http://localhost:3002/api/getEmployeeById',
-            {
-              withCredentials: true,
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`, // Fixed token issue
-              },
-            }
-          );
+          const response = await axios.get(ENDPOINTS.getEmployeeById, {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`, // Fixed token issue
+            },
+          });
           setDefaultData(response.data.employee);
           reset(response.data.employee); // Set default values in form
           setLoading(false);
         } catch (error) {
+          if (axios.isAxiosError(error)) {
+            if (error?.response?.status === 403 || error?.response?.status === 401) {
+              dispatch(logout());
+            }
+          }
           console.error('Error fetching data:', error);
           setLoading(false);
         }
@@ -110,7 +115,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const onSubmit = async (formData: AdminData) => {
     try {
       const response = await axios.patch(
-        'http://localhost:3002/api/update-admin',
+        ENDPOINTS.updateAdmin,
         {
           email: formData.email,
           name: formData.username,
@@ -136,15 +141,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         onClose(); // Close modal after success
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error?.response?.status === 403 || error?.response?.status === 401) {
+          dispatch(logout());
+        }
+      }
       console.error('Error updating employee:', error);
-      toast({
-        title: 'Update Failed',
-        description: 'Error updating employee information.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
     }
   };
 

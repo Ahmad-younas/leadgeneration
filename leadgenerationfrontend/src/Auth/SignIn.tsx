@@ -1,15 +1,15 @@
 import {
   Box,
-  Flex,
   Button,
+  Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Heading,
   Input,
-  Switch,
   Link as ChakraLink,
+  Switch,
   Text,
-  FormErrorMessage,
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
@@ -24,7 +24,7 @@ import { Footer } from '../Components/Footer';
 import axios from 'axios';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { login } from '../redux/authSlice';
-
+import { ENDPOINTS } from '../utils/apiConfig';
 
 const schema = yup.object().shape({
   email: yup
@@ -34,11 +34,13 @@ const schema = yup.object().shape({
   password: yup.string().required('Password is required'),
   remember: yup.boolean(),
 });
+
 interface IFormInput {
   email: string;
   password: string;
   remember?: boolean;
 }
+
 export const SignIn: React.FC = () => {
   const toast = useToast();
   const dispatch = useDispatch<AppDispatch>();
@@ -57,8 +59,9 @@ export const SignIn: React.FC = () => {
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     try {
+      console.log('ENDPOINTS', ENDPOINTS.login);
       const response = await axios.post(
-        'http://localhost:3002/api/login/',
+        ENDPOINTS.login,
         {
           email: data.email,
           password: data.password,
@@ -71,7 +74,7 @@ export const SignIn: React.FC = () => {
       if (response.status === 200) {
         const token = response.data.token;
         localStorage.setItem('authToken', token);
-        dispatch(login(token));// This should be dynamically determined
+        dispatch(login(token)); // This should be dynamically determined
         reset();
       }
     } catch (error) {
@@ -92,8 +95,6 @@ export const SignIn: React.FC = () => {
   };
   useEffect(() => {
     if (user) {
-      console.log("inside the use Effect");
-      // Navigate based on the user's role
       navigate(user.role === 'admin' ? '/admin' : '/employee');
     }
   }, [user, navigate]);

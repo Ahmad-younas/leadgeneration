@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
 import dotenv from "dotenv";
 import { Employee } from "../Model/model";

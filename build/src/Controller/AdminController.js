@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEmployeeJobInfo = exports.getEmployeeById = exports.deleteAllJobs = exports.updateEmployeeJob = exports.deleteSelectedJobs = exports.deleteSelectedEmployees = exports.getEmployeeWithJobInfo = exports.getEmployeeInfoAndEmployeeJobInfo = exports.getMonthlyJobCounts = exports.deleteEmployee = exports.findAllEmployee = exports.updateEmployee = exports.addEmployee = exports.getJobs = void 0;
+exports.updateEmployee = exports.getAllJobStatus = exports.authWithDropBox = exports.getEmployeeJobInfo = exports.getEmployeeById = exports.deleteAllJobs = exports.updateEmployeeJob = exports.deleteSelectedJobs = exports.deleteSelectedEmployees = exports.getEmployeeWithJobInfo = exports.getEmployeeInfoAndEmployeeJobInfo = exports.getMonthlyJobCounts = exports.deleteEmployee = exports.findAllEmployee = exports.updateAdmin = exports.addEmployee = exports.getJobs = void 0;
 const Employee_1 = __importDefault(require("../Model/Employee"));
 const logger_1 = __importDefault(require("../logger"));
 const logger_2 = __importDefault(require("../logger"));
@@ -16,6 +16,7 @@ const spreadSheetService_1 = require("../utils/spreadSheetService");
 const checkAndRefreshToken_1 = require("../utils/checkAndRefreshToken");
 const updateRowInSheet_1 = require("../utils/updateRowInSheet");
 const getJobs = async (req, res) => {
+    logger_2.default.info("getJobs Function Called");
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -26,7 +27,6 @@ const getJobs = async (req, res) => {
         });
         const totalEmployees = await Job_1.default.count(); // Get the total number of employees
         const totalPages = Math.ceil(totalEmployees / limit);
-        //const totalJobs = await Job.count();
         res.status(200).json({
             jobs,
             meta: {
@@ -46,10 +46,16 @@ const getJobs = async (req, res) => {
 };
 exports.getJobs = getJobs;
 const addEmployee = async (req, res) => {
+    logger_2.default.info("addEmployee Function Called");
     const { name, email, password, role } = req.body;
     try {
+        const checkEmployee = await Employee_1.default.findOne({ where: { email: email } });
+        if (checkEmployee) {
+            return res.status(302).json({
+                message: "An employee is already registered with this email.",
+            });
+        }
         const hashedPassword = (0, auth_1.encryptedPassword)(password);
-        console.log(hashedPassword);
         const newEmployee = await Employee_1.default.create({
             username: name,
             email: email,
@@ -74,26 +80,23 @@ exports.addEmployee = addEmployee;
  * @param {CustomRequest} req - Express request object.
  * @param {Response} res - Express response object.
  */
-const updateEmployee = async (req, res) => {
+const updateAdmin = async (req, res) => {
+    logger_1.default.info("UpdateAdmin Function Called");
     const id = req.user?.id;
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
     try {
         const hashedPassword = (0, auth_1.encryptedPassword)(password);
-        const updateEmployee = await Employee_1.default.update({
+        await Employee_1.default.update({
             username: name,
             email: email,
             password: hashedPassword,
-            role: role,
         }, {
             where: {
                 id,
             },
         });
-        console.log("updated Employee", updateEmployee);
         logger_1.default.info("Employee updated");
-        res
-            .status(200)
-            .json({ message: "Employee updated successfully", updateEmployee });
+        res.status(200).json({ message: "Employee updated successfully" });
     }
     catch (err) {
         if (err instanceof Error) {
@@ -102,13 +105,15 @@ const updateEmployee = async (req, res) => {
         res.status(500).json({ message: "Error updating employee", err });
     }
 };
-exports.updateEmployee = updateEmployee;
+exports.updateAdmin = updateAdmin;
 const findAllEmployee = async (req, res) => {
+    logger_2.default.info("findAllEmployee Function Called");
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
         const employees = await Employee_1.default.findAll({
+            where: { role: "employee" },
             limit: limit,
             offset: offset,
         });
@@ -124,7 +129,6 @@ const findAllEmployee = async (req, res) => {
                 password: password,
                 role: row.dataValues.role,
                 id: row.dataValues.id,
-                link: row.dataValues.link,
             };
         });
         res.status(200).json({
@@ -147,6 +151,7 @@ const findAllEmployee = async (req, res) => {
 };
 exports.findAllEmployee = findAllEmployee;
 const deleteEmployee = async (req, res) => {
+    logger_2.default.info("deleteEmployee Function Called");
     const { id } = req.body;
     try {
         const deleted = await Employee_1.default.destroy({
@@ -175,6 +180,7 @@ const deleteEmployee = async (req, res) => {
 };
 exports.deleteEmployee = deleteEmployee;
 const getMonthlyJobCounts = async (req, res) => {
+    logger_2.default.info("getMonthlyJobCounts Function Called");
     try {
         const results = await Month_1.Month.findAll({
             attributes: [
@@ -210,16 +216,11 @@ const getMonthlyJobCounts = async (req, res) => {
 };
 exports.getMonthlyJobCounts = getMonthlyJobCounts;
 const getEmployeeInfoAndEmployeeJobInfo = async (req, res) => {
+    logger_2.default.info("getEmployeeInfoAndEmployeeJobInfo Function Called");
     const { employeeJobId, employeeId } = req.body;
-    console.log("employeeJobid", employeeJobId);
-    console.log("employeeId", employeeId);
     try {
-        // Fetch the employee information using employeeId
         const employeeInfo = await Employee_1.default.findByPk(employeeId);
-        console.log("EmployeeInfo", employeeInfo);
-        // Fetch the employee job information using employeeJobId
         const employeeJobInfo = await Job_1.default.findByPk(employeeJobId);
-        console.log("EmployeeJobInfo", employeeJobInfo);
         if (!employeeInfo || !employeeJobInfo) {
             return res.status(404).json({
                 message: "Employee or Employee Job not found",
@@ -242,6 +243,7 @@ const getEmployeeInfoAndEmployeeJobInfo = async (req, res) => {
 };
 exports.getEmployeeInfoAndEmployeeJobInfo = getEmployeeInfoAndEmployeeJobInfo;
 const getEmployeeWithJobInfo = async (req, res) => {
+    logger_2.default.info("getEmployeeWithJobInfo Function Called");
     try {
         const usersWithJobs = await Employee_1.default.findAll({
             attributes: ["username", "password", "role", "email"], // Specify the fields from the Users table
@@ -275,7 +277,6 @@ const getEmployeeWithJobInfo = async (req, res) => {
                 },
             ],
         });
-        // Send the result as a response
         res.status(200).json(usersWithJobs);
     }
     catch (error) {
@@ -292,8 +293,8 @@ exports.getEmployeeWithJobInfo = getEmployeeWithJobInfo;
  * @param res - The response object to send the status back.
  */
 const deleteSelectedEmployees = async (req, res) => {
+    logger_2.default.info("deleteSelectedEmployees Function Called");
     const { employeeIds } = req.body; // Expecting an array of employee IDs from the request body
-    logger_2.default.info(`employeeIds->${employeeIds}`);
     try {
         await Job_1.default.destroy({
             where: {
@@ -317,8 +318,8 @@ const deleteSelectedEmployees = async (req, res) => {
 };
 exports.deleteSelectedEmployees = deleteSelectedEmployees;
 const deleteSelectedJobs = async (req, res) => {
+    logger_2.default.info("deleteSelectedJobs Function Called");
     const { jobIds } = req.body; // Expecting an array of employee IDs from the request body
-    logger_2.default.info(`employeeIds->${jobIds}`);
     try {
         await Job_1.default.destroy({
             where: {
@@ -339,6 +340,7 @@ exports.deleteSelectedJobs = deleteSelectedJobs;
  * @param {Response} res - Express response object.
  */
 const updateEmployeeJob = async (req, res) => {
+    logger_2.default.info("updateEmployeeJob Function Called");
     const { id, title, firstName, lastName, dateOfBirth, email, contactNumber, address, postcode, landlordName, landlordContactNumber, landlordEmail, agentName, agentContactNumber, agentEmail, heatingType, propertyType, epcRating, serviceType, assessmentDate, notes, month, year, epcBand, waterType, } = req.body;
     const userId = req.user?.id;
     const dataToUpdate = [
@@ -410,14 +412,24 @@ const updateEmployeeJob = async (req, res) => {
         if (!spreadsheetId) {
             logger_2.default.info("spreadSheet is empty");
             spreadsheetId = await (0, spreadSheetService_1.createSpreadsheet)(response.googleTokens);
-            console.log("spreadsheetID", spreadsheetId);
             await Employee_1.default.update({ spreadsheetId }, { where: { id: id } }); // Save the updated employee record
             logger_2.default.info("spreadSheet is created");
         }
         let googleTokens = typeof response.googleTokens === "string"
             ? JSON.parse(response.googleTokens)
             : response.googleTokens;
-        googleTokens = await (0, checkAndRefreshToken_1.refreshGoogleTokens)(googleTokens);
+        if (googleTokens.expiry_date != undefined) {
+            if (Date.now() >= googleTokens.expiry_date) {
+                googleTokens = await (0, checkAndRefreshToken_1.refreshGoogleTokens)(googleTokens);
+                await Employee_1.default.update({ googleTokens: JSON.stringify(googleTokens) }, {
+                    where: { id: id },
+                });
+            }
+            logger_1.default.info("GoogleToken in DB successfully Updated");
+        }
+        else {
+            logger_1.default.error("Token expiry date is undefined.");
+        }
         await (0, updateRowInSheet_1.updateRowInSheet)(dataToUpdate, googleTokens, response.spreadSheetId, response.rowNumber);
         return res.status(200).json({
             message: "Employee job updated successfully",
@@ -437,13 +449,12 @@ exports.updateEmployeeJob = updateEmployeeJob;
  * @param {Response} res - Express response object.
  */
 const deleteAllJobs = async (req, res) => {
+    logger_2.default.info("deleteAllJobs Function Called");
     try {
         // Deleting all jobs
         const deletedCount = await Job_1.default.destroy({
             where: {}, // Empty condition to match all records
         });
-        console.log("deletedCount", deletedCount);
-        // Check if any jobs were deleted
         if (deletedCount > 0) {
             return res.status(200).json({
                 message: `${deletedCount} jobs were successfully deleted.`,
@@ -470,6 +481,7 @@ exports.deleteAllJobs = deleteAllJobs;
  * @param {Response} res - Express response object.
  */
 const getEmployeeById = async (req, res) => {
+    logger_2.default.info("getEmployeeById Function Called");
     const id = req.user?.id;
     try {
         const employee = await Employee_1.default.findByPk(id);
@@ -490,8 +502,8 @@ const getEmployeeById = async (req, res) => {
 };
 exports.getEmployeeById = getEmployeeById;
 const getEmployeeJobInfo = async (req, res) => {
+    logger_2.default.info("getEmployeeJobInfo Function Called");
     const jobId = req.params.id;
-    console.log("jobId", jobId);
     try {
         const job = await Job_1.default.findByPk(jobId);
         if (!job) {
@@ -504,3 +516,66 @@ const getEmployeeJobInfo = async (req, res) => {
     }
 };
 exports.getEmployeeJobInfo = getEmployeeJobInfo;
+const authWithDropBox = async (req, res) => {
+    logger_2.default.info("authWithDropBox Function Called");
+    const id = req.user?.id;
+    const user = await Employee_1.default.findByPk(id);
+    if (user?.dataValues.dropboxAccessToken) {
+        logger_1.default.info("Already authenticated With Dropbox");
+        res.status(201).json({ message: "Already authenticated With Dropbox" });
+    }
+    else {
+        res.status(204).json({ message: "Link Not Found" });
+    }
+};
+exports.authWithDropBox = authWithDropBox;
+const getAllJobStatus = async (req, res) => {
+    logger_2.default.info("getAllJobStatus Function Called");
+    try {
+        const allUserJobs = await Job_1.default.findAll({
+            attributes: [
+                "id",
+                "title",
+                "status",
+                "job_creation_date", // Make sure this matches the exact column name in your database
+            ],
+        });
+        res.status(200).json(allUserJobs);
+    }
+    catch (error) {
+        console.error("Error retrieving job statuses:", error);
+        res.status(500).json({ error: "Failed to retrieve job statuses." });
+    }
+};
+exports.getAllJobStatus = getAllJobStatus;
+/**
+ * Update employee job data by ID.
+ * @param {CustomRequest} req - Express request object.
+ * @param {Response} res - Express response object.
+ */
+const updateEmployee = async (req, res) => {
+    logger_1.default.info("UpdateEmployee Function Called");
+    const { id, name, email, password, role } = req.body;
+    try {
+        const hashedPassword = (0, auth_1.encryptedPassword)(password);
+        await Employee_1.default.update({
+            username: name,
+            email: email,
+            password: hashedPassword,
+            role: role,
+        }, {
+            where: {
+                id,
+            },
+        });
+        logger_1.default.info("Employee updated");
+        res.status(200).json({ message: "Employee updated successfully" });
+    }
+    catch (err) {
+        if (err instanceof Error) {
+            logger_1.default.error(err.message);
+        }
+        res.status(500).json({ message: "Error updating employee", err });
+    }
+};
+exports.updateEmployee = updateEmployee;

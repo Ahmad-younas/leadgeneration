@@ -27,12 +27,13 @@ import {
   NumberInputStepper,
   Select,
   Spacer,
+  Spinner,
   Stack,
   Text,
   Textarea,
   useToast,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import customToolbar from './CustomToolbar';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -45,6 +46,9 @@ import { EmailIcon } from '@chakra-ui/icons';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { ENDPOINTS } from '../../../../utils/apiConfig';
+import { logout } from '../../../../redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 const localizer = momentLocalizer(moment);
 
@@ -54,35 +58,6 @@ interface Event {
   start: Date;
   end: Date;
   description?: string;
-}
-
-interface Data {
-  id: string;
-  title: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  email: string;
-  contactNumber: string;
-  address: string;
-  postcode: string;
-  landlordName: string;
-  landlordContactNumber: string;
-  landlordEmail: string;
-  agentName: string;
-  agentContactNumber: string;
-  agentEmail: string;
-  heatingType: string;
-  propertyType: string;
-  epcRating: string;
-  serviceType: string;
-  assessmentDate: string;
-  notes: string;
-  status: string;
-  year: string;
-  month: string;
-  epcBand: string;
-  waterType: string;
 }
 
 const schema = yup.object().shape({
@@ -122,20 +97,56 @@ export const ConfigureCalendar: React.FC<
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(schema), // use yup for validation
   });
   const token = localStorage.getItem('authToken');
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [jobDetails, setJobDetails] = useState<any | null>(null);
   const toast = useToast();
+
+  useEffect(() => {
+    if (isOpen && jobDetails) {
+      setValue('id', jobDetails.id);
+      setValue('title', jobDetails.title);
+      setValue('firstName', jobDetails.firstName);
+      setValue('lastName', jobDetails.lastName);
+      setValue('dateOfBirth', jobDetails.dateOfBirth);
+      setValue('email', jobDetails.email);
+      setValue('contactNumber', jobDetails.contactNumber);
+      setValue('address', jobDetails.address);
+      setValue('postcode', jobDetails.postcode);
+      setValue('landlordName', jobDetails.landlordName);
+      setValue('landlordContactNumber', jobDetails.landlordContactNumber);
+      setValue('landlordEmail', jobDetails.landlordEmail);
+      setValue('agentName', jobDetails.agentName);
+      setValue('agentContactNumber', jobDetails.agentContactNumber);
+      setValue('agentEmail', jobDetails.agentEmail);
+      setValue('heatingType', jobDetails.heatingType);
+      setValue('propertyType', jobDetails.propertyType);
+      setValue('epcRating', jobDetails.epcRating);
+      setValue('serviceType', jobDetails.serviceType);
+      setValue('assessmentDate', jobDetails.assessmentDate);
+      setValue('notes', jobDetails.notes);
+      setValue('month', jobDetails.month);
+      setValue('year', jobDetails.year);
+      setValue('status', jobDetails.status);
+      setValue('epcBand', jobDetails.epcBand);
+      setValue('waterType', jobDetails.waterType);
+    }
+  }, [isOpen, jobDetails, setValue]);
+
   const onEventClick = async (event: Event) => {
+    console.log();
     setSelectedEvent(event);
     try {
       const response = await axios.get(
-        `http://localhost:3002/api/getEmployeeJobInfo/${event.id}`,
+        ENDPOINTS.getEmployeeJobInfo + event.id,
         {
           withCredentials: true,
           headers: {
@@ -147,6 +158,14 @@ export const ConfigureCalendar: React.FC<
       setJobDetails(response.data); // Set the job details in state
       setIsOpen(true); // Open the modal
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error fetching job details:', error);
     }
   };
@@ -158,17 +177,20 @@ export const ConfigureCalendar: React.FC<
   };
 
   const onSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+    const data = {
+      id: selectedEvent?.id,
+      ...formData,
+    };
+    console.log('FormData', formData);
     try {
-      const response = await axios.put(
-        'http://localhost:3002/api/updateEmployeeJob',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
-        }
-      );
+      const response = await axios.put(ENDPOINTS.updateEmployeeJob, data, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      });
       if (response.status === 200) {
         toast({
           title: 'Job Status.',
@@ -178,15 +200,40 @@ export const ConfigureCalendar: React.FC<
           isClosable: true,
           position: 'top-right',
         });
+        setIsLoading(false);
         onClose();
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error updating employee job:', error);
     }
   };
 
   return (
     <React.Fragment>
+      {isLoading ? (
+        <Box
+          position="fixed"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          backgroundColor="rgba(255, 255, 255, 0.8)" // Adjust opacity and color as needed
+          zIndex="10000" // Ensure it's above other content
+        >
+          <Spinner size="xl" />
+        </Box>
+      ) : null}
       <BigCalendar
         {...props}
         localizer={localizer}
@@ -282,6 +329,7 @@ export const ConfigureCalendar: React.FC<
                               <Select
                                 id="title"
                                 variant="flushed"
+                                placeholder="e.g Mr"
                                 {...register('title')}
                               >
                                 <option value="Miss">Miss</option>
@@ -311,7 +359,6 @@ export const ConfigureCalendar: React.FC<
                                   id="firstName"
                                   placeholder="Enter your first name"
                                   variant={'flushed'}
-                                  defaultValue={jobDetails.firstName}
                                   {...register('firstName')}
                                 />
                               </InputGroup>
@@ -334,7 +381,6 @@ export const ConfigureCalendar: React.FC<
                                   id="lastName"
                                   placeholder="Enter your last name"
                                   variant={'flushed'}
-                                  defaultValue={jobDetails.lastName}
                                   {...register('lastName')}
                                 />
                               </InputGroup>
@@ -357,7 +403,6 @@ export const ConfigureCalendar: React.FC<
                                   id="dateOfBirth"
                                   placeholder="Enter your date of birth"
                                   variant={'flushed'}
-                                  defaultValue={jobDetails.dateOfBirth}
                                   type={'date'}
                                   {...register('dateOfBirth')}
                                 />
@@ -630,7 +675,7 @@ export const ConfigureCalendar: React.FC<
                               </FormLabel>
                               <Select
                                 id="epcBand"
-                                placeholder="Select Band "
+                                placeholder="Select EPC Band "
                                 {...register('epcBand')}
                               >
                                 <option value="High B">High B</option>
@@ -670,10 +715,8 @@ export const ConfigureCalendar: React.FC<
                                 Service Type
                               </FormLabel>
                               <Select
-                                value={jobDetails.serviceType}
                                 id="serviceType"
                                 {...register('serviceType')}
-                                defaultValue={jobDetails.serviceType}
                               >
                                 <option value="Internal wall insulation">
                                   Internal wall insulation
@@ -743,11 +786,7 @@ export const ConfigureCalendar: React.FC<
                             <Heading fontSize={'x-large'}>Jon Info</Heading>
                             <FormControl isInvalid={!!errors.status}>
                               <FormLabel htmlFor="status">Job Status</FormLabel>
-                              <Select
-                                id="status"
-                                {...register('status')}
-                                defaultValue={jobDetails.status}
-                              >
+                              <Select id="status" {...register('status')}>
                                 <option value="Submitted">Submitted</option>
                                 <option value="Canceled">Canceled</option>
                                 <option value="Insulated">Insulated</option>

@@ -16,6 +16,10 @@ import { Employees } from './Employees';
 import axios from 'axios';
 import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
 import { AdminNavbarLink } from './AdminNavbarLink';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
+import { logout } from '../../../../../redux/authSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../../../../redux/store';
 
 interface MetaData {
   totalPages: number;
@@ -29,6 +33,8 @@ export const EmployeeTable = () => {
   const [metaData, setMetaData] = useState<MetaData | null>(null);
   const totalPages = metaData?.totalPages ?? 5;
   const currentPage = metaData?.currentPage ?? 1;
+  const dispatch = useDispatch<AppDispatch>();
+  const token = localStorage.getItem('authToken');
   const navbarIcon = useColorModeValue('gray.500', 'gray.200');
   const mainText = useColorModeValue('gray.700', 'gray.200');
   const secondaryText = useColorModeValue('gray.700', 'white');
@@ -36,12 +42,24 @@ export const EmployeeTable = () => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.get(
-          'http://localhost:3002/api/all-employee/'
-        );
+        const response = await axios.get(ENDPOINTS.allEmployee, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        });
         setEmployeeData(response.data.data);
         setMetaData(response.data.meta);
       } catch (err) {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         setError('Failed to fetch employee data.');
       } finally {
         setLoading(false);
@@ -59,17 +77,27 @@ export const EmployeeTable = () => {
 
   const handleButtonClicked = async (page: number) => {
     try {
-      const response = await axios.get(
-        'http://localhost:3002/api/all-employee/',
-        {
-          params: {
-            page,
+      const response = await axios.get(ENDPOINTS.allEmployee, {
+        params: {
+          page,
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        },
+      });
       setEmployeeData(response.data.data);
       setMetaData(response.data.meta);
     } catch (err) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       setError('Failed to fetch employee data.');
     } finally {
       setLoading(false);

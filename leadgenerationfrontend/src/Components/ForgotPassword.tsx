@@ -2,26 +2,26 @@ import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  Flex,
   Button,
+  Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Heading,
   Input,
-  useToast,
   Link as ChakraLink,
   Text,
   useColorModeValue,
-  FormErrorMessage,
+  useToast,
 } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import signInImage from '../assets/signInImage.png';
 import { Footer } from '../Components/Footer';
 import axios from 'axios';
 import Lottie from 'react-lottie';
 import forgotPassword from '../assets/forgotpassword.json';
+import { ENDPOINTS } from '../utils/apiConfig';
 
 // Define validation schema using Yup
 const schema = yup.object().shape({
@@ -30,9 +30,11 @@ const schema = yup.object().shape({
     .email('Invalid email address')
     .required('Email is required'),
 });
+
 interface IFormInput {
   email: string;
 }
+
 const defaultOptions = {
   loop: true,
   autoplay: true,
@@ -42,6 +44,7 @@ const defaultOptions = {
   },
 };
 export const ForgotPassword: React.FC = () => {
+  const token = localStorage.getItem('authToken');
   const toast = useToast();
   const titleColor = useColorModeValue('teal.300', 'teal.200');
   const textColor = useColorModeValue('gray.400', 'white');
@@ -57,10 +60,15 @@ export const ForgotPassword: React.FC = () => {
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     try {
-      const response = await axios.post('http://localhost:3002/api/forgetPassword', {
+      const response = await axios.post(ENDPOINTS.forgotPassword, {
         email: data.email,
+      },{
+        withCredentials:true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      console.log("response",response.data);
+      console.log('response', response.data);
       if (response.status === 200) {
         toast({
           title: 'Mail Sent.',
@@ -75,8 +83,8 @@ export const ForgotPassword: React.FC = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error('An unexpected error occurred', error.response?.status);
-        let status:number | undefined = error.response?.status;
-        let message:string = error.response?.data.message;
+        let status: number | undefined = error.response?.status;
+        let message: string = error.response?.data.message;
         if (error.response?.status === status) {
           toast({
             title: 'Mail Sent.',
@@ -87,7 +95,10 @@ export const ForgotPassword: React.FC = () => {
             position: 'top-right',
           });
         }
-        console.error("error",error.response?.data ?? "'An unknown error occurred'");
+        console.error(
+          'error',
+          error.response?.data ?? "'An unknown error occurred'"
+        );
       } else {
         console.error('An unexpected error occurred', error);
       }
@@ -199,14 +210,6 @@ export const ForgotPassword: React.FC = () => {
             right="0px"
           >
             <Lottie options={defaultOptions} height={'100%'} width={'100%'} />
-            {/*<Box*/}
-            {/*    bgImage={signInImage} // Update the image path if necessary*/}
-            {/*    w='100%'*/}
-            {/*    h='100%'*/}
-            {/*    bgSize='cover'*/}
-            {/*    bgPosition='50%'*/}
-            {/*    position='absolute'*/}
-            {/*    borderBottomLeftRadius='20px'></Box>*/}
           </Box>
         </Flex>
       </Flex>

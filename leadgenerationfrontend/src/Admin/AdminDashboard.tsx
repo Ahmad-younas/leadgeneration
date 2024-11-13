@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
 import { Box, ChakraProvider } from '@chakra-ui/react';
 import { SidebarContent } from '../Components/Sidebar/SidebarContent';
 import { dashRoutes } from '../Routes/AdminRoutes';
@@ -55,39 +55,3 @@ export const AdminDashboard: React.FC<SideBarProps> = ({ sidebarVariant }) => {
     </ChakraProvider>
   );
 };
-
-// <Box
-//   bg="white"
-//   borderRight="1px"
-//   borderRightColor="gray.200"
-//   w={{ base: 'full', md: 60 }}
-//   pos="fixed"
-//   h="full"
-// >
-//   <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-//     <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-//       PURITY UI DASHBOARD
-//     </Text>
-//   </Flex>
-//   <VStack spacing="4">
-//
-//     <NavItem icon={FaMoneyBill} to="/billing">
-//       Billing
-//     </NavItem>
-//     <NavItem icon={FaTools} to="/rtl">
-//       RTL
-//     </NavItem>
-//     <Text fontSize="sm" color="gray.500" mt="10" mb="2">
-//       ACCOUNT PAGES
-//     </Text>
-//     <NavItem icon={FaUser} to="/profile">
-//       Profile
-//     </NavItem>
-//     <NavItem icon={FaSignInAlt} to="/signin">
-//       Sign In
-//     </NavItem>
-//     <NavItem icon={FaUserPlus} to="/signup">
-//       Sign Up
-//     </NavItem>
-//   </VStack>
-// </Box>

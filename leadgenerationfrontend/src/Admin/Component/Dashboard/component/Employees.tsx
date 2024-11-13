@@ -9,7 +9,6 @@ export const Employees: React.FC = (props) => {
       <Flex justifyContent={'space-between'}>
         <EmployeeTable />
       </Flex>
-      {/*<NavbarLinks brandText={getSecondLastPathSegment(window.location.pathname)} brandTextS={getLastPathSegment(window.location.pathname)} logoText={'LEADS DASHBOARD'}  fixed={fixed}/>*/}
     </React.Fragment>
   );
 };

@@ -12,6 +12,7 @@ const logger = (0, pino_1.default)({
         options: {
             colorize: true,
             translateTime: "SYS:standard", // Adds a readable timestamp format
+            ignore: "pid,hostname", // Ignore these fields in the output
         },
     },
     level: process.env.LOG_LEVEL || "info",
@@ -29,11 +30,26 @@ const logger = (0, pino_1.default)({
             };
         },
         log(object) {
-            if (object.error && object.error instanceof Error) {
-                return {
-                    ...object,
-                    error: { message: object.error.message, stack: object.error.stack },
-                }; // Ensures full error details
+            // Enhanced error formatting
+            if (object.error) {
+                if (object.error instanceof Error) {
+                    return {
+                        ...object,
+                        error: {
+                            message: object.error.message,
+                            stack: object.error.stack,
+                            name: object.error.name, // Include error name
+                        },
+                    }; // Ensures full error details with name and stack
+                }
+                else {
+                    return {
+                        ...object,
+                        error: {
+                            message: String(object.error), // Convert to string if not an instance of Error
+                        },
+                    };
+                }
             }
             return object;
         },

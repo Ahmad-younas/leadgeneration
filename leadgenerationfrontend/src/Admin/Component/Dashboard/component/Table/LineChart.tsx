@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
-import {lineChartOptions } from '../../../../../general';
+import { lineChartOptions } from '../../../../../general';
 import axios from 'axios';
 
 // Define the types for the state
@@ -8,6 +8,7 @@ interface LineChartState {
   chartData: Array<any>;
   chartOptions: object;
 }
+
 interface JobCount {
   total_jobs_on_each_month: number;
 }
@@ -23,21 +24,38 @@ export class LineChart extends React.Component<{}, LineChartState> {
   }
 
   async componentDidMount() {
+    const token = localStorage.getItem('authToken');
     try {
-      // Call the API to get total jobs per month
-      const response = await axios.get('http://localhost:3002/api/get-monthly-count-job'); // Adjust the API endpoint as necessary
-      const jobCounts = response.data.map((item:JobCount) => item.total_jobs_on_each_month);
-
-      // Update the chart data with the API response
+      const response = await axios.get(
+        'http://localhost:3002/api/get-monthly-count-job',
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const jobCounts = response.data.map(
+        (item: JobCount) => item.total_jobs_on_each_month
+      );
       this.setState({
         chartData: [
           {
             name: 'Total Jobs',
             data: jobCounts, // Set the data from the API
-          }
+          },
         ],
       });
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          //dispatch(logout());
+        }
+      }
       console.error('Error fetching job counts:', error);
     }
   }

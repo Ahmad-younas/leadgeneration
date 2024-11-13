@@ -20,8 +20,11 @@ import {
 import { SiGoogleadsense } from 'react-icons/si';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { logout } from '../redux/authSlice';
+
 interface DataRow {
   id: number;
   name: string;
@@ -58,8 +61,8 @@ interface Job {
 
 export const EmployeeHeader: React.FC = ({}) => {
   const navigate = useNavigate();
-
-  // Chakra color mode
+  const token = localStorage.getItem('authToken');
+  const dispatch = useDispatch();
   const bgProfile = useColorModeValue(
     'hsla(0,0%,100%,.8)',
     'linear-gradient(112.83deg, rgba(255, 255, 255, 0.21) 0%, rgba(255, 255, 255, 0) 110.84%)'
@@ -76,22 +79,36 @@ export const EmployeeHeader: React.FC = ({}) => {
   const textColor = useColorModeValue('gray.700', 'white');
   const user = useSelector((state: RootState) => state.auth.user);
   const id = user?.id;
-  const userEmail = user?.email
+  const userEmail = user?.email;
   const fetchDataAndExportToExcel = async () => {
     try {
-      const response = await axios.get('http://localhost:3002/api/getEmployeeJobs',{
-        params:{
-          id
-        }
+      const response = await axios.get(ENDPOINTS.getEmployeeJobs, {
+        params: {
+          id,
+        },
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-        exportToExcel(response.data);
+      exportToExcel(response.data);
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error fetching data or exporting to Excel:', error);
     }
   };
 
   const replaceEmptyFields = (value: any, placeholder = 'N/A') => {
-    return value === undefined || value === null || value === '' ? placeholder : value;
+    return value === undefined || value === null || value === ''
+      ? placeholder
+      : value;
   };
   const exportToExcel = (data: Job[]) => {
     // Map over the data to replace empty fields with placeholders
@@ -122,16 +139,23 @@ export const EmployeeHeader: React.FC = ({}) => {
       year: replaceEmptyFields(job.year),
     }));
     // Check if flattenedData is empty and add placeholder data if so
-    const dataToExport = flattenedData.length > 0 ? flattenedData : [{ jobId: '', jobTitle: '', firstName: '' }];
-console.log("DataToExport",dataToExport);
+    const dataToExport =
+      flattenedData.length > 0
+        ? flattenedData
+        : [{ jobId: '', jobTitle: '', firstName: '' }];
     // Create a worksheet and a workbook
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
 
     // Generate Excel buffer and create a Blob
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const dataBlob = new Blob([excelBuffer], {
+      type: 'application/octet-stream',
+    });
 
     // Save the Excel file
     saveAs(dataBlob, 'DataExport.xlsx');

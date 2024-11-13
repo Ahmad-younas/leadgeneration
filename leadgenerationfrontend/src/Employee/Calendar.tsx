@@ -9,6 +9,9 @@ import {
 import { ConfigureCalendar } from './ConfigureCalendar';
 import moment from 'moment';
 import axios from 'axios';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { logout } from '../redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 interface Event {
   start: Date;
@@ -20,6 +23,7 @@ interface Event {
 export const Calendar: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const token = localStorage.getItem('authToken');
+  const dispatch = useDispatch();
   const backGroundColor = useColorModeValue('white', 'white');
   const navbarIcon = useColorModeValue('gray.500', 'gray.200');
   const mainText = useColorModeValue('gray.700', 'gray.200');
@@ -28,17 +32,13 @@ export const Calendar: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(
-          'http://localhost:3002/api/getJobStatusById',
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ); // Adjust the URL and ID as needed
+        const response = await axios.get(ENDPOINTS.getJobStatusById, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }); // Adjust the URL and ID as needed
         const { usersWithJobs } = response.data;
-        console.log('data', usersWithJobs);
         const mappedEvents = Array.isArray(usersWithJobs)
           ? usersWithJobs.map(
               (job: {
@@ -60,17 +60,22 @@ export const Calendar: React.FC = () => {
                 id: usersWithJobs.id,
               },
             ];
-
-        console.log('mappedEvent', mappedEvents);
         setEvents(mappedEvents);
       } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         console.error('Error fetching events:', error);
       }
     };
 
     fetchEvents();
   }, []);
-  console.log('events', events);
   return (
     <React.Fragment>
       <EmployeeNavbarLink

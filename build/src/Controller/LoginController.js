@@ -30,7 +30,7 @@ const login = async (req, res) => {
         const userName = user.dataValues.username;
         const isPasswordMatch = (0, auth_1.decryptPassword)(hashedPassword);
         if (isPasswordMatch === password) {
-            const token = jsonwebtoken_1.default.sign({ id: userId, username: userName, role: userRole, email: userEmail }, process.env.JWT_SECRET, { expiresIn: "1d" });
+            const token = jsonwebtoken_1.default.sign({ id: userId, username: userName, role: userRole, email: userEmail }, process.env.JWT_SECRET, { expiresIn: "5m" });
             logger_1.default.info("Token Sent Successfully ");
             return res.json({ token });
         }

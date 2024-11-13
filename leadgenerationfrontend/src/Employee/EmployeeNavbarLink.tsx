@@ -31,7 +31,6 @@ export const EmployeeNavbarLink: React.FC<EmployeeNavbarLinkProps> = (props) => 
     backgroundColor,
   } = props;
 
-  let navbarIcon = useColorModeValue('gray.500', 'gray.200');
 
   return (
     <Flex

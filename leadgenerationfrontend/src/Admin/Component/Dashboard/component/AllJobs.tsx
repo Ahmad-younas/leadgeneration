@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavbarLinks } from '../../../../Components/Navbar/NavbarLinks';
 import {
   getLastPathSegment,
   getSecondLastPathSegment,

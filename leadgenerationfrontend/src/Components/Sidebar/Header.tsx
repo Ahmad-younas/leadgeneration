@@ -1,28 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ProfileBgImage from '../../assets/ProfileBackground.png';
 import {
   Avatar,
-  AvatarGroup,
   Box,
   Button,
   Flex,
-  Menu,
-  MenuButton,
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
-
-import { EmployeeNavbarLink } from '../../Employee/EmployeeNavbarLink';
-import { getLastPathSegment, getSecondLastPathSegment } from '../../RoutePath/Path';
+import {
+  getLastPathSegment,
+  getSecondLastPathSegment,
+} from '../../RoutePath/Path';
 import { RiFileExcel2Fill } from 'react-icons/ri';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { IoAddCircle } from 'react-icons/io5';
-import { FiExternalLink } from "react-icons/fi";
+import { FiExternalLink } from 'react-icons/fi';
 
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AdminNavbarLink } from '../../Admin/Component/Dashboard/component/Table/AdminNavbarLink';
+import { ENDPOINTS } from '../../utils/apiConfig';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/authSlice';
 
 interface Job {
   title: string;
@@ -54,25 +55,36 @@ interface User {
   email: string;
   jobs: Job[];
 }
+
 export const Header: React.FC = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
+  const token = localStorage.getItem('authToken');
   const fetchDataAndExportToExcel = async () => {
     try {
-      // Call the API to fetch the data using Axios
-      const response = await axios.get('http://localhost:3002/api/getEmployeeWithJobInfo'); // Replace with your actual API endpoint URL
-
-      // Convert the data to Excel
-      exportToExcel(response.data); // Pass the fetched data to the exportToExcel function
+      const response = await axios.get(ENDPOINTS.getEmployeeWithJobInfo, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      exportToExcel(response.data);
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error fetching data or exporting to Excel:', error);
     }
   };
 
-  const exportToExcel = (data:User[]) => {
-    // Flatten the data to handle nested structures (if necessary)
-    const flattenedData = data.flatMap(user =>
-      user.jobs.map(job => ({
+  const exportToExcel = (data: User[]) => {
+    const flattenedData = data.flatMap((user) =>
+      user.jobs.map((job) => ({
         Title: job.title,
         FirstName: job.firstName,
         LastName: job.lastName,
@@ -84,7 +96,6 @@ export const Header: React.FC = () => {
         LandLordName: job.landlordName,
         LandLordContactNumber: job.landlordContactNumber,
         LandLordEmail: job.landlordEmail,
-
         HeatingType: job.heatingType,
         PropertyType: job.propertyType,
         RPCRating: job.epcRating,
@@ -92,18 +103,17 @@ export const Header: React.FC = () => {
         AssessmentDate: job.assessmentDate,
         Notes: job.notes,
         Month: job.month,
-        Year: job.year
+        Year: job.year,
       }))
     );
 
-    // Create a worksheet and a workbook
     const worksheet = XLSX.utils.json_to_sheet(
-      flattenedData.length > 0 ? flattenedData : [{ id: '', name: '', email: '' }]
+      flattenedData.length > 0
+        ? flattenedData
+        : [{ id: '', name: '', email: '' }]
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-    // Generate Excel buffer and create a Blob
     const excelBuffer = XLSX.write(workbook, {
       bookType: 'xlsx',
       type: 'array',
@@ -111,11 +121,8 @@ export const Header: React.FC = () => {
     const dataBlob = new Blob([excelBuffer], {
       type: 'application/octet-stream',
     });
-
-    // Save the Excel file
     saveAs(dataBlob, 'DataExport.xlsx');
   };
-
 
   // Chakra color mode
   const textColor = useColorModeValue('gray.700', 'white');
@@ -161,12 +168,14 @@ export const Header: React.FC = () => {
           display={'flex'}
           justifyContent="space-between"
         >
-          <AdminNavbarLink brandText={getSecondLastPathSegment(window.location.pathname)}
-                              brandTextS={getLastPathSegment(window.location.pathname)}
-                              mainTextColor={mainText}
-                              secondaryTextColor={secondaryText}
-                              navbarIconColor={navbarIcon}
-                              backgroundColor={'transparent'}/>
+          <AdminNavbarLink
+            brandText={getSecondLastPathSegment(window.location.pathname)}
+            brandTextS={getLastPathSegment(window.location.pathname)}
+            mainTextColor={mainText}
+            secondaryTextColor={secondaryText}
+            navbarIconColor={navbarIcon}
+            backgroundColor={'transparent'}
+          />
         </Box>
         <Flex
           direction={{ sm: 'column', md: 'row' }}
@@ -225,7 +234,12 @@ export const Header: React.FC = () => {
             direction={{ sm: 'column', lg: 'row' }}
             w={{ sm: '100%', md: '50%', lg: 'auto' }}
           >
-            <Button p="0px" bg="transparent" _hover={{ bg: 'none' }} onClick={() => fetchDataAndExportToExcel()}>
+            <Button
+              p="0px"
+              bg="transparent"
+              _hover={{ bg: 'none' }}
+              onClick={() => fetchDataAndExportToExcel()}
+            >
               <Flex
                 align="center"
                 w={{ sm: '100%', lg: '135px' }}
@@ -238,18 +252,25 @@ export const Header: React.FC = () => {
                 cursor="pointer"
               >
                 <RiFileExcel2Fill />
-                <Text fontSize={{ sm: 'sm', md: 'md', xl: '12px' }}
-                      color={textColor}
-                      fontWeight="semibold"
-                      textTransform={'uppercase'}
-                      p={'5px'}>
+                <Text
+                  fontSize={{ sm: 'sm', md: 'md', xl: '12px' }}
+                  color={textColor}
+                  fontWeight="semibold"
+                  textTransform={'uppercase'}
+                  p={'5px'}
+                >
                   Export Jobs
                 </Text>
               </Flex>
             </Button>
-            <Button p="0px" bg="transparent" _hover={{ bg: 'none' }} onClick={() => {
-              navigate('/admin/addjobs');
-            }}>
+            <Button
+              p="0px"
+              bg="transparent"
+              _hover={{ bg: 'none' }}
+              onClick={() => {
+                navigate('/admin/addjobs');
+              }}
+            >
               <Flex
                 align="center"
                 w={{ lg: '135px' }}
@@ -265,14 +286,20 @@ export const Header: React.FC = () => {
                   p={'5px'}
                   color={textColor}
                   fontWeight="semibold"
-                  textTransform={'uppercase'}>
+                  textTransform={'uppercase'}
+                >
                   Add Job
                 </Text>
               </Flex>
             </Button>
-            <Button p="0px" bg="transparent" _hover={{ bg: 'none' }} onClick={() => {
-              navigate('/admin/alljobs');
-            }}>
+            <Button
+              p="0px"
+              bg="transparent"
+              _hover={{ bg: 'none' }}
+              onClick={() => {
+                navigate('/admin/alljobs');
+              }}
+            >
               <Flex
                 align="center"
                 w={{ lg: '135px' }}
@@ -287,7 +314,8 @@ export const Header: React.FC = () => {
                   p={'5px'}
                   color={textColor}
                   fontWeight="semibold"
-                  textTransform={'uppercase'}>
+                  textTransform={'uppercase'}
+                >
                   All Job
                 </Text>
               </Flex>

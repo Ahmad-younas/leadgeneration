@@ -4,6 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Lottie from 'lottie-react';
 import Animation from '../assets/Animation.json';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { useDispatch } from 'react-redux';
+import { logout } from '../redux/authSlice';
 
 export const DropboxCallback: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -11,6 +14,7 @@ export const DropboxCallback: React.FC = () => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,7 +26,7 @@ export const DropboxCallback: React.FC = () => {
         setAccessToken(code); // Set the access token state
         axios
           .post(
-            'http://localhost:3002/api/dropbox/callback',
+            ENDPOINTS.dropboxCallback,
             { code },
             {
               headers: {
@@ -39,6 +43,11 @@ export const DropboxCallback: React.FC = () => {
             // Redirect to a success page or handle as needed
           })
           .catch((err) => {
+            if (axios.isAxiosError(error)) {
+              if (error?.response?.status === 403 || error?.response?.status === 401 ) {
+                dispatch(logout());
+              }
+            }
             console.error('Error saving token:', err);
             setError('Failed to save access token.');
             setLoading(false);

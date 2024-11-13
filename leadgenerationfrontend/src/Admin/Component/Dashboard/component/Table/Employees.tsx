@@ -23,6 +23,10 @@ import { TableDataRow } from './TableDataRow';
 import { DeleteIcon, SearchIcon } from '@chakra-ui/icons';
 import { AiOutlineCheckCircle } from 'react-icons/ai';
 import axios from 'axios';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from 'redux/store';
+import { logout } from '../../../../../redux/authSlice';
 
 interface DataRow {
   email: string;
@@ -47,8 +51,9 @@ export const Employees: React.FC<cardTableProps> = ({
   let mainTeal = useColorModeValue('teal.300', 'teal.300');
   let inputBg = useColorModeValue('white', 'gray.800');
   let mainText = useColorModeValue('gray.700', 'gray.200');
-  let navbarIcon = useColorModeValue('gray.500', 'gray.200');
   let searchIcon = useColorModeValue('gray.700', 'gray.200');
+  const token = localStorage.getItem('authToken');
+  const dispatch = useDispatch<AppDispatch>();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [employees, setEmployees] = useState(data);
@@ -81,9 +86,16 @@ export const Employees: React.FC<cardTableProps> = ({
   const handleDeleteSelected = async () => {
     try {
       const response = await axios.post(
-        'http://localhost:3002/api/deleteSelectedEmployees',
+        ENDPOINTS.deleteSelectedEmployees,
         {
           employeeIds: selectedEmployees, // Pass the selected employee IDs to the backend
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
         }
       );
       if (response.status === 200) {
@@ -104,6 +116,14 @@ export const Employees: React.FC<cardTableProps> = ({
       setSelectedEmployees([]);
       setSelectedEmployees([]);
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error deleting selected employees:', error);
     }
   };
@@ -136,14 +156,6 @@ export const Employees: React.FC<cardTableProps> = ({
             >
               Delete Selected
             </Button>
-            {/*<Button*/}
-            {/*  leftIcon={<DeleteIcon />}*/}
-            {/*  colorScheme="teal"*/}
-            {/*  variant="solid"*/}
-            {/*>*/}
-            {/*  Delete All Employees*/}
-            {/*</Button>*/}
-
             <InputGroup
               cursor="pointer"
               bg={inputBg}

@@ -20,6 +20,9 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from 'redux/store';
+import { logout } from '../../../../../redux/authSlice';
 
 interface FormData {
   name: string;
@@ -49,14 +52,11 @@ const schema = yup.object().shape({
   id: yup.string().required('Id is required'),
 });
 
-export const Model: React.FC<AuthModalProps> = ({
-  isOpenModel,
-  onCloseModel,
-  data,
-}) => {
+export const Model: React.FC<AuthModalProps> = ({ isOpenModel, onCloseModel, data, }) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+  const dispatch = useDispatch<AppDispatch>();
   const {
     register,
     handleSubmit,
@@ -97,6 +97,12 @@ export const Model: React.FC<AuthModalProps> = ({
       onCloseModel();
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
         toast({
           title: 'Employee Update Status.',
           description: error?.response?.data?.message,

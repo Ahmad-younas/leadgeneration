@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../../redux/store';
 import { FaDropbox } from 'react-icons/fa';
 import axios from 'axios';
+import { ENDPOINTS } from '../../../../utils/apiConfig';
 
 export const Setting = () => {
   const [isOpenModel, setIsOpenModel] = useState<boolean>(false);
@@ -26,15 +27,12 @@ export const Setting = () => {
   const toast = useToast();
   const authWithDropBox = async () => {
     try {
-      const response = await axios.get(
-        'http://localhost:3002/api/authWithDropBox',
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(ENDPOINTS.authWithDropBox, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 201) {
         toast({
@@ -48,18 +46,32 @@ export const Setting = () => {
       } else if (response.status === 204) {
         await initiateDropboxAuth();
       }
-    } catch (error) {}
+    } catch (error) {
+      if(axios.isAxiosError(error)){
+        if (error?.response?.status === 403 || error?.response?.status === 401) {
+          dispatch(logout());
+        }
+      }
+    }
   };
 
   const initiateDropboxAuth = async () => {
     try {
-      // Fetch the Dropbox authentication URL from the backend using Axios
       const response = await axios.get(
-        'http://localhost:3002/api/dropbox/auth-url'
+        'http://localhost:3002/api/dropbox/auth-url',{
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      // Redirect the user to the Dropbox authorization page
       window.location.href = response.data.url; // This triggers the OAuth flow
     } catch (error) {
+      if(axios.isAxiosError(error)){
+        if (error?.response?.status === 403 || error?.response?.status === 401) {
+          dispatch(logout());
+        }
+      }
       console.error('Error fetching Dropbox Auth URL:', error);
     }
   };

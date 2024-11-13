@@ -1,27 +1,27 @@
 import React from 'react';
 import {
   Box,
-  Flex,
   Button,
+  Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Heading,
   Input,
-  Link as ChakraLink,
-  useToast,
   Text,
   useColorModeValue,
-  FormErrorMessage,
+  useToast,
 } from '@chakra-ui/react';
-import Logger from "../Logger";
+import Logger from '../Logger';
 import { useLocation } from 'react-router-dom';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import Lottie from 'react-lottie';
 import resetpassword from '../assets/resetpassword.json';
 import { Footer } from '../Components/Footer';
 import axios from 'axios';
+import { ENDPOINTS } from '../utils/apiConfig';
 
 // Define validation schema using Yup
 const schema = yup.object().shape({
@@ -49,6 +49,7 @@ interface IFormInput {
   password: string;
   confirmPassword: string;
 }
+
 export const RecoverPassword: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -68,12 +69,17 @@ export const RecoverPassword: React.FC = () => {
   });
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     const newData = {
-      newPassword:data.password,
-      token
-    }
-    try{
-      const response = await axios.post("http://localhost:3002/api/resetPassword",newData );
-      if(response.status === 200){
+      newPassword: data.password,
+      token,
+    };
+    try {
+      const response = await axios.post(ENDPOINTS.resetPassword, newData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
         toast({
           title: 'Password Status',
           description: 'Your password has been successfully updated.',
@@ -84,11 +90,11 @@ export const RecoverPassword: React.FC = () => {
         });
         reset();
       }
-    }catch (error){
+    } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error('An unexpected error occurred', error.response?.status);
-        let status:number | undefined = error.response?.status;
-        let message:string = error.response?.data.message;
+        let status: number | undefined = error.response?.status;
+        let message: string = error.response?.data.message;
         if (error.response?.status === status) {
           toast({
             title: 'Password Status.',
@@ -99,7 +105,7 @@ export const RecoverPassword: React.FC = () => {
             position: 'top-right',
           });
         }
-        Logger.error("error",error.response?.data.message);
+        Logger.error('error', error.response?.data.message);
       } else {
         Logger.error('An unexpected error occurred', error);
       }

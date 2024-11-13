@@ -7,7 +7,6 @@ import {
   StatNumber,
   useColorModeValue,
 } from '@chakra-ui/react';
-// Custom components
 import { Card } from '../../../../Components/Card/Card';
 import { CardBody } from '../../../../Components/Card/Cardbody';
 import IconBox from '../../../../Components/Icons/IconBox';

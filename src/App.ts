@@ -4,6 +4,8 @@ import cors, { CorsOptions } from "cors";
 import adminRoutes from "./Routes/Admin";
 import EmployeeRoutes from "./Routes/Employee";
 import LoginRoutes from "./Routes/Login";
+import path from "node:path";
+import Logger from "./logger";
 
 const app = express();
 const corsOptions: CorsOptions = {
@@ -12,7 +14,8 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(express.static(path.join(__dirname, "../build")));
+app.use(express.static(path.join(__dirname, "../build/build")));
+console.log("path", path.join(__dirname, "../build/build"));
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -26,6 +29,11 @@ app.get("/health", (req, res) => {
 
 app.use("/api/", EmployeeRoutes);
 app.use("/api/", LoginRoutes);
-app.use("/api", adminRoutes);
+app.use("/api/", adminRoutes);
+
+app.get("*", (req, res) => {
+  Logger.info("WildCard Route Called");
+  res.sendFile(path.join(__dirname, "../build/build", "index.html"));
+});
 
 export default app;

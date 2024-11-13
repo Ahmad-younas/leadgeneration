@@ -37,6 +37,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { EmailIcon } from '@chakra-ui/icons';
 import axios from 'axios';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
+import { logout } from '../../../../../redux/authSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../../../../redux/store';
 
 interface Data {
   id: string;
@@ -114,6 +118,7 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
   const initialRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const finalRef = useRef<HTMLInputElement>(null);
+  const dispatch = useDispatch<AppDispatch>();
   const {
     register,
     handleSubmit,
@@ -157,16 +162,13 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
 
   const onSubmit = async (formData: FormData) => {
     try {
-      const response = await axios.put(
-        'http://localhost:3002/api/updateEmployeeJob',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
-        }
-      );
+      const response = await axios.put(ENDPOINTS.updateEmployeeJob, formData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      });
       if (response.status === 200) {
         toast({
           title: 'Job Status.',
@@ -179,6 +181,14 @@ export const EditEmployeeJob: React.FC<AuthModalProps> = ({
         onCloseModel();
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error updating employee job:', error);
     }
   };

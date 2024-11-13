@@ -36,6 +36,9 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { EmailIcon } from '@chakra-ui/icons';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { logout } from '../redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 const localizer = momentLocalizer(moment);
 
@@ -51,6 +54,7 @@ type ConfigureCalendarProps = Omit<CalendarProps<Event, object>, 'localizer'>;
 
 export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
   const token = localStorage.getItem('authToken');
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [jobDetails, setJobDetails] = useState<any | null>(null);
@@ -58,7 +62,7 @@ export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
     setSelectedEvent(event);
     try {
       const response = await axios.get(
-        `http://localhost:3002/api/getEmployeeJobInfo/${event.id}`,
+        ENDPOINTS.getEmployeeJobInfo + event.id,
         {
           withCredentials: true,
           headers: {
@@ -69,10 +73,17 @@ export const ConfigureCalendar: React.FC<ConfigureCalendarProps> = (props) => {
       setJobDetails(response.data); // Set the job details in state
       setIsOpen(true); // Open the modal
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error fetching job details:', error);
     }
   };
-  console.log('jobDetails', jobDetails);
 
   const onClose = () => {
     setIsOpen(false);

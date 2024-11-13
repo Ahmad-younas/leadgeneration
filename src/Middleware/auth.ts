@@ -20,7 +20,6 @@ const authenticateJWT = (
 ) => {
   Logger.info("authenticateJWT Triggered");
   const token = req.header("Authorization")?.split(" ")[1];
-  console.log("token", token);
   if (!token) {
     return res.sendStatus(401);
   }

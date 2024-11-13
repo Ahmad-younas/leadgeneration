@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { Employee } from "../Model/model";
 import Logger from "../logger";
 import { google } from "googleapis";
@@ -20,16 +20,17 @@ export const getAuthUrl = (req: Request, res: Response) => {
     redirect_uri: process.env.REDIRECT_URI,
     client_id: process.env.GOOGLE_CLIENT_ID,
   });
+  console.log("authURL", authUrl);
   res.json({ url: authUrl });
 };
 
 export const oauth2Callback = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   Logger.info("Get oauth2Callback function is called");
   const { code } = req.body;
+  console.log("Code", code);
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = process.env.REDIRECT_URI;

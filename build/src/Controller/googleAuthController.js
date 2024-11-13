@@ -12,9 +12,6 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 dotenv_1.default.config();
 const oauth2Client = new googleapis_1.google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.REDIRECT_URI);
 const getAuthUrl = (req, res) => {
-    console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
-    console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
-    console.log("REDIRECT_URI:", process.env.REDIRECT_URI);
     logger_1.default.info("getAuthUrl function called");
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: "offline", // Required to get a refresh token
@@ -23,12 +20,11 @@ const getAuthUrl = (req, res) => {
         redirect_uri: process.env.REDIRECT_URI,
         client_id: process.env.GOOGLE_CLIENT_ID,
     });
-    logger_1.default.info(`Auth URL Created: ${authUrl}`);
-    console.log("authUrl", authUrl);
+    console.log("authURL", authUrl);
     res.json({ url: authUrl });
 };
 exports.getAuthUrl = getAuthUrl;
-const oauth2Callback = async (req, res, next) => {
+const oauth2Callback = async (req, res) => {
     logger_1.default.info("Get oauth2Callback function is called");
     const { code } = req.body;
     console.log("Code", code);
@@ -50,7 +46,6 @@ const oauth2Callback = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const secretKey = process.env.JWT_SECRET || "your-secret-key"; // Replace with your actual secret key
     const decoded = jsonwebtoken_1.default.verify(token, secretKey);
-    console.log("decodedId", decoded.id);
     try {
         // Ensure code is a string
         if (typeof code !== "string") {
@@ -62,16 +57,12 @@ const oauth2Callback = async (req, res, next) => {
         if (!tokens) {
             throw new Error("Failed to retrieve tokens from Google.");
         }
-        logger_1.default.info(`Tokens received: ${JSON.stringify(tokens)}`);
         oauth2Client.setCredentials(tokens);
         const tokensString = JSON.stringify(tokens);
-        console.log("GOOGLE TOKEN:", tokensString);
-        logger_1.default.info(`GoogleToken: ${tokensString}`);
         // Update employee record with Google tokens
         await model_1.Employee.update({ googleTokens: tokensString }, { where: { id: decoded.id } });
-        // Redirect to success page
-        // res.redirect("/success"); // Ensure this path matches your frontend setup
-        next();
+        logger_1.default.info("Google Token Successfully Stored in the Database");
+        res.status(200).json("Google Token Successfully Stored in the Database");
     }
     catch (error) {
         logger_1.default.error(`Error during OAuth2 callback: ${error}`);

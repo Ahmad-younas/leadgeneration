@@ -8,6 +8,8 @@ import {
 import moment from 'moment';
 import { ConfigureCalendar } from './ConfigureCalendar';
 import axios from 'axios';
+import { logout } from '../../../../redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 interface Event {
   start: Date;
@@ -16,14 +18,14 @@ interface Event {
   id: number;
 }
 
-
-
 export const Calendar: React.FC = () => {
   const backGroundColor = useColorModeValue('white', 'white');
   const navbarIcon = useColorModeValue('gray.500', 'gray.200');
   const mainText = useColorModeValue('gray.700', 'gray.200');
   const secondaryText = useColorModeValue('gray.700', 'white');
+  const dispatch = useDispatch();
   const [events, setEvents] = useState<Event[]>([]);
+  console.log('events', events);
   const token = localStorage.getItem('authToken');
   useEffect(() => {
     const fetchEvents = async () => {
@@ -64,6 +66,14 @@ export const Calendar: React.FC = () => {
         console.log('mappedEvent', mappedEvents);
         setEvents(mappedEvents);
       } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         console.error('Error fetching events:', error);
       }
     };

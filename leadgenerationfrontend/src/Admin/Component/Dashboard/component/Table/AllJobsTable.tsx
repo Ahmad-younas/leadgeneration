@@ -27,6 +27,10 @@ import { ViewEmployeeJob } from './ViewEmployeeJob';
 import { ArrowBackIcon, ArrowForwardIcon, SearchIcon } from '@chakra-ui/icons';
 import { EditEmployeeJob } from './EditEmployeeJob';
 import { Jobs } from '../../../../../Employee/Jobs';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
+import { logout } from '../../../../../redux/authSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from 'redux/store';
 
 interface Jobs {
   title: string;
@@ -50,13 +54,13 @@ export const AllJobsTable = () => {
   let inputBg = useColorModeValue('white', 'gray.800');
   let mainText = useColorModeValue('gray.700', 'gray.200');
   let searchIcon = useColorModeValue('gray.700', 'gray.200');
-  let paginationButtonColor = useColorModeValue('teal.300', 'teal.300');
   const [Loading, setLoading] = useState(false);
   const [isOpenViewEmployeeModel, setIsOpenViewEmployeeModel] =
     useState<boolean>(false);
   const [isOpenEditEmployeeModel, setIsOpenEditEmployeeModel] =
     useState<boolean>(false);
   const [jobs, setJobs] = useState<Jobs[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
   const [selectedJobs, setSelectedJobs] = useState<number[]>([]);
   const onCloseViewModel = () => setIsOpenViewEmployeeModel(false);
   const onCloseEditModel = () => setIsOpenEditEmployeeModel(false);
@@ -99,13 +103,27 @@ export const AllJobsTable = () => {
   useEffect(() => {
     setLoading(true);
     axios
-      .get('http://localhost:3002/api/all-jobs')
+      .get(ENDPOINTS.getAllJobs, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      })
       .then((response) => {
         setJobs(response.data.jobs);
         setLoading(false);
         setMetaData(response.data.meta);
       })
       .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         console.log('error', error);
       });
   }, []);
@@ -138,9 +156,19 @@ export const AllJobsTable = () => {
       return;
     }
     axios
-      .post('http://localhost:3002/api/deleteSelectedJobs', {
-        jobIds: selectedJobs,
-      })
+      .post(
+        ENDPOINTS.deleteSelectedJob,
+        {
+          jobIds: selectedJobs,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      )
       .then((response) => {
         if (response.status === 200) {
           toast({
@@ -156,6 +184,14 @@ export const AllJobsTable = () => {
         setSelectedJobs([]); // Clear selected jobs
       })
       .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         console.log('Error deleting jobs:', error);
       });
   };
@@ -174,7 +210,7 @@ export const AllJobsTable = () => {
     }
     try {
       const response = await axios.post(
-        'http://localhost:3002/api/deleteAllJobs',
+        ENDPOINTS.deleteAllJobs,
         { jobIds: jobs },
         {
           withCredentials: true,
@@ -198,25 +234,32 @@ export const AllJobsTable = () => {
         setSelectedJobs([]); // Clear selected jobs
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.log('Error deleting jobs:', error);
-      toast({
-        title: 'Error',
-        position: 'top-right',
-        description: 'Failed to delete jobs.',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
     }
   };
 
   const fetchEmployeeInfoForView = (id: number, user_id: number) => {
     axios
       .post(
-        'http://localhost:3002/api/get-Employee-Info-And-Employee-Job-Info',
+        ENDPOINTS.getEmployeeInfoAndEmployeeJobInfo,
         {
           employeeJobId: id,
           employeeId: user_id,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
         }
       )
       .then((response) => {
@@ -255,6 +298,14 @@ export const AllJobsTable = () => {
         setIsOpenViewEmployeeModel(true);
       })
       .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         console.log('error', error);
       });
   };
@@ -262,10 +313,17 @@ export const AllJobsTable = () => {
   const fetchEmployeeInfoForEdit = (id: number, user_id: number) => {
     axios
       .post(
-        'http://localhost:3002/api/get-Employee-Info-And-Employee-Job-Info',
+        ENDPOINTS.getEmployeeInfoAndEmployeeJobInfo,
         {
           employeeJobId: id, // Replace with actual employeeJobId
           employeeId: user_id, // Replace with actual employeeId
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
         }
       )
       .then((response) => {
@@ -304,6 +362,14 @@ export const AllJobsTable = () => {
         setIsOpenEditEmployeeModel(true);
       })
       .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
+        }
         console.log('error', error);
       });
   };
@@ -312,7 +378,7 @@ export const AllJobsTable = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        `http://localhost:3002/api/createFolderInDropBox/${id}`,
+        ENDPOINTS.createDropBoxLink + id,
         { address },
         {
           withCredentials: true,
@@ -344,6 +410,12 @@ export const AllJobsTable = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
+          if (
+            error?.response?.status === 403 ||
+            error?.response?.status === 401
+          ) {
+            dispatch(logout());
+          }
         if (error?.response?.status === 409) {
           toast({
             title: 'DropBox Folder Status.',
@@ -363,6 +435,7 @@ export const AllJobsTable = () => {
             position: 'top-right',
           });
         }
+
         setLoading(false);
       }
     }
@@ -376,15 +449,27 @@ export const AllJobsTable = () => {
 
   const handleButtonClicked = async (page: number) => {
     try {
-      const response = await axios.get('http://localhost:3002/api/all-jobs', {
+      const response = await axios.get(ENDPOINTS.getAllJobs, {
         params: {
           page,
+        },
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       });
       setJobs(response.data.jobs);
       setMetaData(response.data.meta);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
+      console.log('error', error);
     } finally {
       console.log('unCatch error');
     }

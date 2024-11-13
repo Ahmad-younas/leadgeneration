@@ -28,6 +28,8 @@ import { SearchIcon } from '@chakra-ui/icons';
 import { RootState } from '../redux/store';
 import { EditEmployeeJob } from './EditEmployeeJob';
 import { setJob } from '../redux/jobSlice';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { logout } from '../redux/authSlice';
 
 interface Jobs {
   title: string;
@@ -101,17 +103,26 @@ export const AllJobsTable = () => {
   const id = user?.id;
   useEffect(() => {
     axios
-      .get(`http://localhost:3002/api/getJobInfoOfEmployee/${id}`)
+      .get(ENDPOINTS.getJobInfoOfEmployee + id, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      })
       .then((response) => {
-        console.log('responseOfAllJobsFrom Employee', response.data);
         setJobs(response.data.usersWithJobs);
         dispatch(setJob(response.data.usersWithJobs));
         setMetaData(response.data.meta);
       })
       .catch((error) => {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
         console.log('error', error);
       });
-    // Perform the GET request to fetch all jobs
   }, []);
 
   const handleSelectAll = () => {
@@ -130,14 +141,18 @@ export const AllJobsTable = () => {
   };
 
   const fetchEmployeeInfoForView = (id: number, user_id: number) => {
-    console.log('id', id);
-    console.log('user_id', user_id);
     axios
       .post(
-        'http://localhost:3002/api/get-Employee-Info-And-Employee-Job-Info',
+        ENDPOINTS.getEmployeeInfoAndEmployeeJobInfo,
         {
           employeeJobId: id,
           employeeId: user_id,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
         }
       )
       .then((response) => {
@@ -176,6 +191,12 @@ export const AllJobsTable = () => {
         setIsOpenViewEmployeeModel(true);
       })
       .catch((error) => {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
         console.log('error', error);
       });
   };
@@ -184,12 +205,20 @@ export const AllJobsTable = () => {
     console.log('id', id);
     console.log('userID', user_id);
     axios
-      .post('http://localhost:3002/api/getIndividualEmployeeWithJobInfo', {
-        employeeJobId: id, // Replace with actual employeeJobId
-        employeeId: user_id, // Replace with actual employeeId
-      })
+      .post(
+        ENDPOINTS.getIndividualEmployeeWithJobInfo,
+        {
+          employeeJobId: id, // Replace with actual employeeJobId
+          employeeId: user_id, // Replace with actual employeeId
+        },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      )
       .then((response) => {
-        console.log('response', response);
         const { employeeInfo, employeeJobInfo } = response.data;
         setEditData({
           id: employeeJobInfo.id || '',
@@ -225,6 +254,12 @@ export const AllJobsTable = () => {
         setIsOpenEditEmployeeModel(true);
       })
       .catch((error) => {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
         console.log('error', error);
       });
   };
@@ -242,9 +277,18 @@ export const AllJobsTable = () => {
       return;
     }
     axios
-      .post('http://localhost:3002/api/deleteSelectedJobs', {
-        jobIds: selectedJobs,
-      })
+      .post(
+        ENDPOINTS.deleteSelectedJob,
+        {
+          jobIds: selectedJobs,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      )
       .then((response) => {
         if (response.status === 200) {
           toast({
@@ -260,6 +304,12 @@ export const AllJobsTable = () => {
         setSelectedJobs([]); // Clear selected jobs
       })
       .catch((error) => {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
         console.log('Error deleting jobs:', error);
       });
   };
@@ -278,7 +328,7 @@ export const AllJobsTable = () => {
     }
     try {
       const response = await axios.post(
-        'http://localhost:3002/api/deleteAllJobs',
+        ENDPOINTS.deleteAllJobs,
         { jobIds: jobs },
         {
           withCredentials: true,
@@ -302,15 +352,15 @@ export const AllJobsTable = () => {
         setSelectedJobs([]); // Clear selected jobs
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.log('Error deleting jobs:', error);
-      toast({
-        title: 'Error',
-        position: 'top-right',
-        description: 'Failed to delete jobs.',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
     }
   };
 
@@ -323,7 +373,7 @@ export const AllJobsTable = () => {
   const handleButtonClicked = async (page: number) => {
     try {
       const response = await axios.get(
-        'http://localhost:3002/api/getJobInfoOfEmployeeWithPagination',
+        ENDPOINTS.getJobInfoOfEmployeeWithPagination,
         {
           params: {
             page,
@@ -331,12 +381,18 @@ export const AllJobsTable = () => {
           },
         }
       );
-      console.log('response:', response.data);
       setJobs(response.data.usersWithJobs);
       setMetaData(response.data.meta);
-    } catch (err) {
-      console.log(err);
-      // setError('Failed to fetch employee data.');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
+      console.log(error);
     } finally {
       console.log('unCatch error');
       // setLoading(false);

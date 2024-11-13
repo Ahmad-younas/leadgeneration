@@ -9,11 +9,7 @@ import { AdminTheme } from '../Admin/AdminTheme';
 export const EmployeeDashboard: React.FC<SideBarProps> = ({
   sidebarVariant,
 }) => {
-  const mainPanel = useRef<HTMLDivElement>(null);
-  console.log('mainpanel' + mainPanel);
   const variantChange = '0.2s linear';
-
-  console.log(window.location.pathname);
   const opaqueMargins = '16px 0px 16px 16px';
   const transparentMargins = '0px';
   const sidebarMargins =

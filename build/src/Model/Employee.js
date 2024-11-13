@@ -16,7 +16,7 @@ class Employee extends sequelize_1.Model {
     resetPasswordExpires;
     googleTokens;
     spreadsheetId;
-    link;
+    dropboxAccessToken;
     getId() {
         return this.id;
     }
@@ -85,7 +85,7 @@ Employee.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
-    link: {
+    dropboxAccessToken: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true,
     },

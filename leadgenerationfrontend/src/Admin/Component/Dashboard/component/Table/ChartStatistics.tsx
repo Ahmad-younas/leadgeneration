@@ -1,12 +1,7 @@
-// Chakra imports
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react';
-// Custom components
-
 import React from 'react';
 import { Card } from '../../../../../Components/Card/Card';
 import CardHeader from '../../../../../Components/Card/CardHeader';
-
-// Define the prop types using an interface
 interface SalesOverviewProps {
   title: string;
   percentage: number;

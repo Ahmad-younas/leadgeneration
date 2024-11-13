@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Button,
   Flex,
   Td,
-  Tr,
   Text,
-  Button,
   useColorModeValue,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
   useDisclosure,
-  Box, useToast,
+  useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { Model } from './Model';
-import { AiFillDropboxCircle } from 'react-icons/ai';
 import axios from 'axios';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from 'redux/store';
+import { logout } from '../../../../../redux/authSlice';
 
 interface TableDataRowProps {
   name: string;
@@ -29,12 +31,14 @@ interface TableDataRowProps {
 }
 
 export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
-  const { name, email, password, role, id} = props;
+  const { name, email, password, role, id } = props;
   const toast = useToast();
   const textColor = useColorModeValue('gray.400', 'white');
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const dispatch = useDispatch<AppDispatch>();
   const cancelRef = React.useRef<HTMLButtonElement | null>(null);
   const [isOpenModel, setIsOpenModel] = useState<boolean>(false);
+  const token = localStorage.getItem('authToken');
   const [editData, setEditData] = useState({
     name: '',
     email: '',
@@ -52,11 +56,19 @@ export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
 
   const handleDeleteEmployee = async (id: string) => {
     try {
-      // Send a POST request to the backend with the selected employee IDs
-      const response = await axios.post('http://localhost:3002/api/deleteSelectedEmployees', {
-        employeeIds: id, // Pass the selected employee IDs to the backend
-      });
-      if(response.status === 200){
+      const response = await axios.post(
+        ENDPOINTS.deleteSelectedEmployees,
+        {
+          employeeIds: id,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
         toast({
           title: 'Employee Status.',
           description: ' Employee Successfully Added.',
@@ -68,21 +80,39 @@ export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
       }
       onClose();
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error deleting selected employees:', error);
     }
   };
 
   return (
     <React.Fragment>
-      <Model isOpenModel={isOpenModel} onCloseModel={onCloseModel} data={editData} />
-      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+      <Model
+        isOpenModel={isOpenModel}
+        onCloseModel={onCloseModel}
+        data={editData}
+      />
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
               Delete Employee
             </AlertDialogHeader>
 
-            <AlertDialogBody>Are you sure? You can't undo this action afterwards.</AlertDialogBody>
+            <AlertDialogBody>
+              Are you sure? You can't undo this action afterwards.
+            </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onClose}>
@@ -102,7 +132,12 @@ export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
       <Td minWidth={{ sm: '250px', md: '200px', lg: '100px' }} pl="0px">
         <Flex align="center" py=".8rem" minWidth="100%" flexWrap="nowrap">
           <Flex direction="column">
-            <Text fontSize="sm" color={textColor} fontWeight="normal" minWidth="100%">
+            <Text
+              fontSize="sm"
+              color={textColor}
+              fontWeight="normal"
+              minWidth="100%"
+            >
               {name}
             </Text>
           </Flex>
@@ -124,12 +159,22 @@ export const TableDataRow: React.FC<TableDataRowProps> = (props) => {
         </Text>
       </Td>
       <Td>
-        <Button leftIcon={<EditIcon />} colorScheme="teal" variant="solid" onClick={handleEditClick}>
+        <Button
+          leftIcon={<EditIcon />}
+          colorScheme="teal"
+          variant="solid"
+          onClick={handleEditClick}
+        >
           Edit
         </Button>
       </Td>
       <Td>
-        <Button leftIcon={<DeleteIcon />} colorScheme="teal" variant="solid" onClick={onOpen}>
+        <Button
+          leftIcon={<DeleteIcon />}
+          colorScheme="teal"
+          variant="solid"
+          onClick={onOpen}
+        >
           Delete
         </Button>
       </Td>

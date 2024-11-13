@@ -3,29 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getJobStatusById = exports.createDropboxFolder = exports.getEmployeeJobs = exports.getStatusCountOfJobs = exports.getMonthlyJobCountOfEmployee = exports.getIndividualEmployeeWithJobInfo = exports.getJobInfoOfEmployeeWithPagination = exports.getJobInfoOfEmployee = exports.addLeads = exports.updateLeads = exports.getLeads = void 0;
+exports.getJobStatusById = exports.getEmployeeJobs = exports.getStatusCountOfJobs = exports.getMonthlyJobCountOfEmployee = exports.getIndividualEmployeeWithJobInfo = exports.getJobInfoOfEmployeeWithPagination = exports.getJobInfoOfEmployee = exports.addLeads = void 0;
 const model_1 = require("../Model/model");
 const logger_1 = __importDefault(require("../logger"));
 const logger_2 = __importDefault(require("../logger"));
 const sequelize_typescript_1 = require("sequelize-typescript");
 const sequelize_1 = require("sequelize");
 const googleapis_1 = require("googleapis");
-const dropbox_1 = require("dropbox");
 const spreadSheetService_1 = require("../utils/spreadSheetService");
 const dotenv_1 = __importDefault(require("dotenv"));
 const checkAndRefreshToken_1 = require("../utils/checkAndRefreshToken");
 dotenv_1.default.config();
 const oauth2Client = new googleapis_1.google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.REDIRECT_URI);
-//This function Get all the Jobs
-const getLeads = (req, res) => {
-    res.send("Leads Add Successfully").status(201);
-};
-exports.getLeads = getLeads;
-const updateLeads = (req, res) => {
-    res.send("Update Add Successfully").status(201);
-};
-exports.updateLeads = updateLeads;
-// Send Data to Google Sheet After Authorization
 async function appendToSheet(data, tokens, spreadsheetId) {
     logger_2.default.info("Append to Sheet function called");
     oauth2Client.setCredentials(tokens); // Use stored tokens
@@ -139,14 +128,24 @@ const addLeads = async (req, res) => {
         if (!spreadsheetId) {
             logger_2.default.info("spreadSheet is empty");
             spreadsheetId = await (0, spreadSheetService_1.createSpreadsheet)(googleToken);
-            console.log("spreadsheetID", spreadsheetId);
             await model_1.Employee.update({ spreadsheetId }, { where: { id: employee.dataValues.id } }); // Save the updated employee record
             logger_2.default.info("spreadSheet is created");
         }
         let googleTokens = typeof employee.dataValues.googleTokens === "string"
             ? JSON.parse(employee.dataValues.googleTokens)
             : employee.dataValues.googleTokens;
-        googleTokens = await (0, checkAndRefreshToken_1.refreshGoogleTokens)(googleTokens);
+        if (googleTokens.expiry_date != undefined) {
+            if (Date.now() >= googleTokens.expiry_date) {
+                googleTokens = await (0, checkAndRefreshToken_1.refreshGoogleTokens)(googleTokens);
+                const googleTokensString = JSON.stringify(googleTokens);
+                await model_1.Employee.update({ googleTokens: googleTokensString }, {
+                    where: { id: id },
+                });
+            }
+        }
+        else {
+            logger_1.default.error("Token expiry date is undefined.");
+        }
         const dataArray = [
             title,
             firstName,
@@ -175,7 +174,6 @@ const addLeads = async (req, res) => {
             "Booked",
         ];
         const sheetRowNumber = await appendToSheet(dataArray, googleTokens, spreadsheetId);
-        console.log("sheetRowNumber", sheetRowNumber);
         await model_1.Job.create({
             title,
             firstName,
@@ -205,14 +203,10 @@ const addLeads = async (req, res) => {
             waterType,
             epcBand,
         });
-        const user = await model_1.Employee.findByPk(id);
-        if (user?.dataValues.link) {
-            logger_1.default.info("Job created Successfully");
-            res.status(201).json({ message: "Job added successfully" });
-        }
-        else {
-            res.status(204).json({ message: "Link Not Found" });
-        }
+        logger_1.default.info("Job Successfully added into Database and GoogleSheet");
+        res.status(201).json({
+            message: "Job Successfully added into Database and GoogleSheet",
+        });
     }
     catch (err) {
         if (err instanceof Error) {
@@ -224,6 +218,7 @@ const addLeads = async (req, res) => {
 };
 exports.addLeads = addLeads;
 const getJobInfoOfEmployee = async (req, res) => {
+    logger_1.default.info("getJobInfoOfEmployee function Called");
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -251,6 +246,7 @@ const getJobInfoOfEmployee = async (req, res) => {
                 "serviceType",
                 "assessmentDate",
                 "notes",
+                "dropboxFolderLink",
             ],
             where: {
                 user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -284,6 +280,7 @@ const getJobInfoOfEmployee = async (req, res) => {
 };
 exports.getJobInfoOfEmployee = getJobInfoOfEmployee;
 const getJobInfoOfEmployeeWithPagination = async (req, res) => {
+    logger_1.default.info("getJobInfoOfEmployeeWithPagination function Called");
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -311,6 +308,7 @@ const getJobInfoOfEmployeeWithPagination = async (req, res) => {
                 "serviceType",
                 "assessmentDate",
                 "notes",
+                "dropboxFolderLink",
             ],
             where: {
                 user_id: id, // Replace '1' with the actual user ID you are filtering by
@@ -344,6 +342,7 @@ const getJobInfoOfEmployeeWithPagination = async (req, res) => {
 };
 exports.getJobInfoOfEmployeeWithPagination = getJobInfoOfEmployeeWithPagination;
 const getIndividualEmployeeWithJobInfo = async (req, res) => {
+    logger_1.default.info("getIndividualEmployeeWithJobInfo function Called");
     const { employeeJobId, employeeId } = req.body;
     try {
         // Fetch users with associated employee jobs
@@ -371,16 +370,14 @@ const getIndividualEmployeeWithJobInfo = async (req, res) => {
 };
 exports.getIndividualEmployeeWithJobInfo = getIndividualEmployeeWithJobInfo;
 const getMonthlyJobCountOfEmployee = async (req, res) => {
-    // Extract the userId and year from the request query parameters
+    logger_1.default.info("getMonthlyJobCountOfEmployee function Called");
     const id = parseInt(req.query.id);
     try {
-        // Ensure userId and year are provided and valid
         if (!id) {
             return res.status(400).json({
                 message: "Missing 'userId' or 'year' query parameter",
             });
         }
-        // Perform the Sequelize query to get the monthly job count
         const monthlyJobCounts = await model_1.Month.findAll({
             attributes: [
                 "month_name",
@@ -404,8 +401,6 @@ const getMonthlyJobCountOfEmployee = async (req, res) => {
             group: ["Month.month_name"], // Group by the month_name column
             raw: true, // Use raw SQL for more control
         });
-        console.log(monthlyJobCounts);
-        // Send the result as a response
         res.status(200).json(monthlyJobCounts);
     }
     catch (error) {
@@ -418,6 +413,7 @@ const getMonthlyJobCountOfEmployee = async (req, res) => {
 };
 exports.getMonthlyJobCountOfEmployee = getMonthlyJobCountOfEmployee;
 const getStatusCountOfJobs = async (req, res) => {
+    logger_1.default.info("getStatusCountOfJobs function Called");
     const id = parseInt(req.query.user_id);
     try {
         // Ensure userId and year are provided and valid
@@ -454,15 +450,14 @@ const getStatusCountOfJobs = async (req, res) => {
 exports.getStatusCountOfJobs = getStatusCountOfJobs;
 // Controller function to get employee jobs for Excel Sheet
 const getEmployeeJobs = async (req, res) => {
+    logger_1.default.info("getEmployeeJobs function Called");
     const id = req.query.id;
     try {
-        // Fetch employee jobs where user_id is 3
         const employeeJobs = await model_1.Job.findAll({
             where: {
                 user_id: id, // Use req.params or req.body to dynamically set user_id if needed
             },
         });
-        // Check if jobs were found
         if (employeeJobs.length === 0) {
             return res
                 .status(404)
@@ -481,53 +476,12 @@ const getEmployeeJobs = async (req, res) => {
     }
 };
 exports.getEmployeeJobs = getEmployeeJobs;
-// Create a folder for the user
-const createDropboxFolder = async (req, res) => {
-    try {
-        const { accessToken, employeeId } = req.body; // Use the access token obtained previously
-        // Initialize Dropbox client with the user's Access Token
-        const dbx = new dropbox_1.Dropbox({ accessToken });
-        // Create a unique folder name based on employee ID
-        const folderName = `/Employee_${employeeId}_Folder`;
-        // Create the folder in Dropbox
-        const folderResponse = await dbx.filesCreateFolderV2({ path: folderName });
-        res.status(201).json({
-            message: "Folder created successfully",
-            folderId: folderResponse.result.metadata.id,
-        });
-    }
-    catch (error) {
-        console.error("Error creating Dropbox folder:", error);
-        res.status(500).json({ error: "Failed to create Dropbox folder" });
-    }
-};
-exports.createDropboxFolder = createDropboxFolder;
 const getJobStatusById = async (req, res) => {
+    logger_1.default.info("getJobStatusById function Called");
     const id = req.user?.id;
     try {
         const usersWithJobs = await model_1.Job.findAll({
-            attributes: [
-                "id",
-                "title",
-                "firstName",
-                "lastName",
-                "dateOfBirth",
-                "email",
-                "contactNumber",
-                "address",
-                "postcode",
-                "landlordName",
-                "landlordContactNumber",
-                "landlordEmail",
-                "heatingType",
-                "propertyType",
-                "epcRating",
-                "serviceType",
-                "assessmentDate",
-                "notes",
-                "status",
-                "job_creation_date",
-            ],
+            attributes: ["id", "title", "status", "job_creation_date"],
             where: {
                 user_id: id, // Replace '1' with the actual user ID you are filtering by
             },

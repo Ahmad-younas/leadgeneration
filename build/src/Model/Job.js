@@ -34,6 +34,7 @@ class Job extends sequelize_1.Model {
     rowNumber;
     epcBand;
     waterType;
+    dropboxFolderLink;
 }
 Job.init({
     id: {
@@ -153,6 +154,10 @@ Job.init({
     waterType: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
+    },
+    dropboxFolderLink: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
     },
 }, {
     sequelize: DbConnection_1.default,

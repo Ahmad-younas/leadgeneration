@@ -5,6 +5,9 @@ import { Box, Center, Spinner, Text } from '@chakra-ui/react';
 import { jwtDecode } from 'jwt-decode';
 import Lottie from 'lottie-react';
 import Animation from '../assets/Animation.json';
+import { ENDPOINTS } from '../utils/apiConfig';
+import { logout } from '../redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 interface DecodedToken {
   id: string;
@@ -13,24 +16,25 @@ interface DecodedToken {
 }
 
 const Callback = () => {
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [showLottie, setShowLottie] = useState(false);
   useEffect(() => {
-    // Extract the authorization code from the URL query parameters
     const queryParams = new URLSearchParams(location.search);
     const code = queryParams.get('code');
     if (code) {
       handleAuthorizationCode(code);
     } else {
       console.error('No authorization code found.');
-      navigate('/error'); // Redirect to an error page or handle accordingly
+      navigate('/error');
     }
   }, []);
 
   const handleAuthorizationCode = async (code: string) => {
     const token = localStorage.getItem('authToken');
+    console.log('ENDPOINTS.authCallback', ENDPOINTS.authCallback);
     try {
       if (!token) {
         console.error('Token not found in local storage.');
@@ -42,6 +46,7 @@ const Callback = () => {
         'http://localhost:3002/api/auth/callback',
         { code },
         {
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -57,6 +62,14 @@ const Callback = () => {
         }, 2000);
       }
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (
+          error?.response?.status === 403 ||
+          error?.response?.status === 401
+        ) {
+          dispatch(logout());
+        }
+      }
       console.error('Error handling authorization code:', error);
       setLoading(false);
     }

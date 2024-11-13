@@ -13,16 +13,14 @@ import { authenticateJWT } from "../Middleware/auth";
 
 const router = express.Router();
 
-
 router.post("/login", login);
 router.post("/forgetPassword", requestPasswordReset);
 router.post("/resetPassword", resetPassword);
-// Route to generate the Google authentication URL
-router.get("/auth/google", getAuthUrl);
+router.get("/auth/google", authenticateJWT, getAuthUrl);
 
 // Route to handle the OAuth2 callback
 router.post("/auth/callback", authenticateJWT, oauth2Callback);
-router.get("/dropbox/auth-url", getDropboxAuthUrl);
+router.get("/dropbox/auth-url", authenticateJWT, getDropboxAuthUrl);
 router.post("/dropbox/callback", authenticateJWT, dropboxAuthCallback);
 
 export default router;

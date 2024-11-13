@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSpreadSheetIdAndRowNumber = void 0;
 const Job_1 = __importDefault(require("../Model/Job"));
 const model_1 = require("../Model/model");
+const logger_1 = __importDefault(require("../logger"));
 const getSpreadSheetIdAndRowNumber = async (jobId, userId) => {
+    logger_1.default.info("getSpreadSheetIdAndRowNumber Function Called");
     try {
         const job = await Job_1.default.findOne({
             where: { id: jobId },

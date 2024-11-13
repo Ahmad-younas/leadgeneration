@@ -84,16 +84,7 @@ export const AddEmployee: React.FC = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error?.response?.status === 403) {
-          toast({
-            title: 'Session Expired.',
-            description:
-              'Your session has expired. Please log in again to continue.',
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-            position: 'top-right',
-          });
+        if (error?.response?.status === 403 || error?.response?.status === 401) {
           dispatch(logout());
         } else if (error?.response?.status === 302) {
           toast({
