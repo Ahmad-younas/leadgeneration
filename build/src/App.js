@@ -13,7 +13,7 @@ const node_path_1 = __importDefault(require("node:path"));
 const logger_1 = __importDefault(require("./logger"));
 const app = (0, express_1.default)();
 const corsOptions = {
-    origin: "http://localhost:3000", // Replace with the origin of your Flutter app
+    origin: "http://localhost:3002", // Replace with the origin of your Flutter app
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
 };

@@ -9,7 +9,7 @@ import Logger from "./logger";
 
 const app = express();
 const corsOptions: CorsOptions = {
-  origin: "http://localhost:3000", // Replace with the origin of your Flutter app
+  origin: "http://localhost:3002", // Replace with the origin of your Flutter app
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 };
