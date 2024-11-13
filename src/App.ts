@@ -14,8 +14,8 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "../build/build")));
-console.log("path", path.join(__dirname, "../build/build"));
+app.use(express.static(path.join(__dirname, "../build")));
+console.log("path", path.join(__dirname, "../build"));
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -33,7 +33,7 @@ app.use("/api/", adminRoutes);
 
 app.get("*", (req, res) => {
   Logger.info("WildCard Route Called");
-  res.sendFile(path.join(__dirname, "../build/build", "index.html"));
+  res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
 
 export default app;

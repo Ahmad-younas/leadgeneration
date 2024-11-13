@@ -18,8 +18,8 @@ const corsOptions = {
     credentials: true,
 };
 app.use(body_parser_1.default.urlencoded({ extended: false }));
-app.use(express_1.default.static(node_path_1.default.join(__dirname, "../build/build")));
-console.log("path", node_path_1.default.join(__dirname, "../build/build"));
+app.use(express_1.default.static(node_path_1.default.join(__dirname, "../build")));
+console.log("path", node_path_1.default.join(__dirname, "../build"));
 app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.get("/health", (req, res) => {
@@ -34,6 +34,6 @@ app.use("/api/", Login_1.default);
 app.use("/api/", Admin_1.default);
 app.get("*", (req, res) => {
     logger_1.default.info("WildCard Route Called");
-    res.sendFile(node_path_1.default.join(__dirname, "../build/build", "index.html"));
+    res.sendFile(node_path_1.default.join(__dirname, "../build", "index.html"));
 });
 exports.default = app;
