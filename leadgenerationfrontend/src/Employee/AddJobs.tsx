@@ -130,7 +130,6 @@ export const AddJobs: React.FC = () => {
           error?.response?.data.error ===
           'Employee not authenticated with Google'
         ) {
-          console.log('ENDPOINTS.authGoogle', ENDPOINTS.authGoogle);
           axios
             .get(ENDPOINTS.authGoogle, {
               withCredentials: true,

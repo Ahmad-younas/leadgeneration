@@ -143,7 +143,6 @@ const findAllEmployee = async (req, res) => {
     }
     catch (err) {
         if (err instanceof Error) {
-            console.log("err", err);
             logger_1.default.error(err.message);
         }
         res.status(500).json({ message: "Error finding employee", err });
@@ -234,7 +233,7 @@ const getEmployeeInfoAndEmployeeJobInfo = async (req, res) => {
     catch (err) {
         // Handle any unexpected errors
         if (err instanceof Error) {
-            console.error(err.message);
+            logger_2.default.error("Error", err);
         }
         res
             .status(500)
@@ -280,7 +279,7 @@ const getEmployeeWithJobInfo = async (req, res) => {
         res.status(200).json(usersWithJobs);
     }
     catch (error) {
-        console.error("Error fetching employee with job info:", error);
+        logger_2.default.error("Error fetching employee with job info:", error);
         res.status(500).json({
             message: "Failed to fetch employee with job information",
             error: error,
@@ -312,7 +311,7 @@ const deleteSelectedEmployees = async (req, res) => {
             .json({ message: "Selected employees deleted successfully." });
     }
     catch (error) {
-        console.error("Error deleting selected employees:", error);
+        logger_2.default.error("Error deleting selected employees:", error);
         res.status(500).json({ error: "Failed to delete selected employees." });
     }
 };
@@ -329,7 +328,7 @@ const deleteSelectedJobs = async (req, res) => {
         res.status(200).json({ message: "Selected Deleted deleted successfully." });
     }
     catch (error) {
-        console.error("Error deleting selected employees:", error);
+        logger_2.default.error("Error deleting selected employees:", error);
         res.status(500).json({ error: "Failed to delete selected employees." });
     }
 };
@@ -436,7 +435,7 @@ const updateEmployeeJob = async (req, res) => {
         });
     }
     catch (error) {
-        console.error("Error updating employee job:", error);
+        logger_2.default.error("Error updating employee job:", error);
         return res
             .status(500)
             .json({ message: "Failed to update employee job", error });
@@ -467,7 +466,7 @@ const deleteAllJobs = async (req, res) => {
         }
     }
     catch (error) {
-        console.error("Error deleting all jobs:", error);
+        logger_2.default.error("Error deleting all jobs:", error);
         return res.status(500).json({
             message: "Failed to delete jobs.",
             error: error,
@@ -496,7 +495,7 @@ const getEmployeeById = async (req, res) => {
         return res.status(200).json({ employee: customEmployee });
     }
     catch (error) {
-        console.error("Error fetching employee:", error);
+        logger_2.default.error("Error fetching employee:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
@@ -543,7 +542,7 @@ const getAllJobStatus = async (req, res) => {
         res.status(200).json(allUserJobs);
     }
     catch (error) {
-        console.error("Error retrieving job statuses:", error);
+        logger_2.default.error("Error retrieving job statuses:", error);
         res.status(500).json({ error: "Failed to retrieve job statuses." });
     }
 };

@@ -34,7 +34,6 @@ const Callback = () => {
 
   const handleAuthorizationCode = async (code: string) => {
     const token = localStorage.getItem('authToken');
-    console.log('ENDPOINTS.authCallback', ENDPOINTS.authCallback);
     try {
       if (!token) {
         console.error('Token not found in local storage.');

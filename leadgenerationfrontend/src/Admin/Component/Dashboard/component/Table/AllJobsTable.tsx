@@ -124,7 +124,6 @@ export const AllJobsTable = () => {
             dispatch(logout());
           }
         }
-        console.log('error', error);
       });
   }, []);
 

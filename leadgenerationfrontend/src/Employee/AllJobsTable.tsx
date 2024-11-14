@@ -202,8 +202,6 @@ export const AllJobsTable = () => {
   };
 
   const fetchEmployeeInfoForEdit = (id: number, user_id: number) => {
-    console.log('id', id);
-    console.log('userID', user_id);
     axios
       .post(
         ENDPOINTS.getIndividualEmployeeWithJobInfo,

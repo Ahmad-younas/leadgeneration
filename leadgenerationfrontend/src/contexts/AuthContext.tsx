@@ -15,9 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const login = (role: 'admin' | 'employee') => {
-    console.log('LoginFunction called', role);
     setUser({ role });
-    console.log('LoginFunction called', role);
   };
   const logout = () => {
     setUser(null);

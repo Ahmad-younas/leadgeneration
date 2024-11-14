@@ -20,14 +20,12 @@ const getAuthUrl = (req, res) => {
         redirect_uri: process.env.REDIRECT_URI,
         client_id: process.env.GOOGLE_CLIENT_ID,
     });
-    console.log("authURL", authUrl);
     res.json({ url: authUrl });
 };
 exports.getAuthUrl = getAuthUrl;
 const oauth2Callback = async (req, res) => {
     logger_1.default.info("Get oauth2Callback function is called");
     const { code } = req.body;
-    console.log("Code", code);
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.REDIRECT_URI;
@@ -66,7 +64,6 @@ const oauth2Callback = async (req, res) => {
     }
     catch (error) {
         logger_1.default.error(`Error during OAuth2 callback: ${error}`);
-        console.error("Error during OAuth2 callback:", error);
         res.status(500).send("Authentication failed");
     }
 };

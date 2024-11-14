@@ -30,7 +30,7 @@ const login = async (req, res) => {
         const userName = user.dataValues.username;
         const isPasswordMatch = (0, auth_1.decryptPassword)(hashedPassword);
         if (isPasswordMatch === password) {
-            const token = jsonwebtoken_1.default.sign({ id: userId, username: userName, role: userRole, email: userEmail }, process.env.JWT_SECRET, { expiresIn: "5m" });
+            const token = jsonwebtoken_1.default.sign({ id: userId, username: userName, role: userRole, email: userEmail }, process.env.JWT_SECRET, { expiresIn: "1d" });
             logger_1.default.info("Token Sent Successfully ");
             return res.json({ token });
         }
@@ -63,7 +63,7 @@ const requestPasswordReset = async (req, res) => {
             await user.save();
         }
         catch (error) {
-            console.error("Error saving user:", error);
+            logger_2.default.error("Error saving user:", error);
         }
         //
         await (0, sendResetPasswordEmail_1.sendResetPasswordEmail)(email, token);
@@ -93,8 +93,6 @@ const resetPassword = async (req, res) => {
         const user = await model_1.Employee.findOne({
             where: { resetPasswordToken: token },
         });
-        console.log("user", user?.resetPasswordExpires);
-        console.log("user", user);
         if (!user) {
             return res
                 .status(404)
@@ -104,7 +102,6 @@ const resetPassword = async (req, res) => {
         logger_2.default.info(`NewDate${new Date()}`);
         // Check if the reset token has expired
         if (user.resetPasswordExpires && user.resetPasswordExpires <= new Date()) {
-            console.log("Inside");
             return res.status(400).json({ message: "Reset token has expired" });
         }
         // Hash the new password
@@ -117,7 +114,7 @@ const resetPassword = async (req, res) => {
         res.json({ message: "Password reset successfully" });
     }
     catch (error) {
-        console.error("Error resetting password:", error);
+        logger_2.default.error("Error resetting password:", error);
         res.status(500).json({ message: "Server error", error });
     }
 };

@@ -142,7 +142,6 @@ export const ConfigureCalendar: React.FC<
   }, [isOpen, jobDetails, setValue]);
 
   const onEventClick = async (event: Event) => {
-    console.log();
     setSelectedEvent(event);
     try {
       const response = await axios.get(
@@ -154,7 +153,6 @@ export const ConfigureCalendar: React.FC<
           },
         }
       );
-      console.log('Response', response);
       setJobDetails(response.data); // Set the job details in state
       setIsOpen(true); // Open the modal
     } catch (error) {
@@ -169,7 +167,6 @@ export const ConfigureCalendar: React.FC<
       console.error('Error fetching job details:', error);
     }
   };
-  console.log('jobDetails', jobDetails);
 
   const onClose = () => {
     setIsOpen(false);
@@ -182,7 +179,6 @@ export const ConfigureCalendar: React.FC<
       id: selectedEvent?.id,
       ...formData,
     };
-    console.log('FormData', formData);
     try {
       const response = await axios.put(ENDPOINTS.updateEmployeeJob, data, {
         withCredentials: true,

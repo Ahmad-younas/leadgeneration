@@ -7,7 +7,6 @@ exports.sendResetPasswordEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const logger_1 = __importDefault(require("../logger"));
 const logger_2 = __importDefault(require("../logger")); // Adjust this import according to your logger setup
-// Nodemailer transport configuration
 const transporter = nodemailer_1.default.createTransport({
     service: "Gmail", // e.g., 'Gmail', 'Yahoo', 'Outlook'
     auth: {

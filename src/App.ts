@@ -5,7 +5,6 @@ import adminRoutes from "./Routes/Admin";
 import EmployeeRoutes from "./Routes/Employee";
 import LoginRoutes from "./Routes/Login";
 import path from "node:path";
-import Logger from "./logger";
 
 const app = express();
 const corsOptions: CorsOptions = {
@@ -15,7 +14,6 @@ const corsOptions: CorsOptions = {
 };
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "../build")));
-console.log("path", path.join(__dirname, "../build"));
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -32,7 +30,6 @@ app.use("/api/", LoginRoutes);
 app.use("/api/", adminRoutes);
 
 app.get("*", (req, res) => {
-  Logger.info("WildCard Route Called");
   res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
 

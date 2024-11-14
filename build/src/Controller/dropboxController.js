@@ -24,11 +24,10 @@ const getDropboxAuthUrl = (req, res) => {
     dropboxAuth
         .getAuthenticationUrl(redirectUri, undefined, "code", "offline")
         .then((authUrl) => {
-        console.log("authUrl", authUrl);
         res.json({ url: authUrl });
     })
         .catch((error) => {
-        console.error("Error generating Dropbox Auth URL:", error);
+        logger_1.default.error("Error generating Dropbox Auth URL:", error);
         res.status(500).json({ error: "Failed to generate authentication URL" });
     });
 };
@@ -68,7 +67,7 @@ const dropboxAuthCallback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error("Error creating folder or generating link in Dropbox:", error);
+        logger_1.default.error("Error creating folder or generating link in Dropbox:", error);
         res
             .status(500)
             .json({ error: "Failed to create folder or generate link in Dropbox." });
@@ -106,7 +105,6 @@ const createFolderInDropBox = async (req, res) => {
             logger_1.default.warn("Folder already exists in Dropbox");
             return res.status(409).json({ message: "Folder already exists" });
         }
-        console.log("error", error);
         logger_1.default.error("Error creating folder in Dropbox:", error);
         res.status(500).json({ error: error.message });
     }

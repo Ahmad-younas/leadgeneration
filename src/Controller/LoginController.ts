@@ -32,7 +32,7 @@ export const login = async (req: Request, res: Response) => {
       const token = jwt.sign(
         { id: userId, username: userName, role: userRole, email: userEmail },
         process.env.JWT_SECRET!,
-        { expiresIn: "5m" },
+        { expiresIn: "1d" },
       );
       logger.info("Token Sent Successfully ");
       return res.json({ token });
@@ -65,7 +65,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
       user.setDataValue("resetPasswordExpires", new Date(Date.now() + 120000)); // 1 hour from now
       await user.save();
     } catch (error) {
-      console.error("Error saving user:", error);
+      Logger.error("Error saving user:", error);
     }
     //
     await sendResetPasswordEmail(email, token);
@@ -94,8 +94,6 @@ export const resetPassword = async (req: Request, res: Response) => {
       where: { resetPasswordToken: token },
     });
 
-    console.log("user", user?.resetPasswordExpires);
-    console.log("user", user);
     if (!user) {
       return res
         .status(404)
@@ -106,7 +104,6 @@ export const resetPassword = async (req: Request, res: Response) => {
     Logger.info(`NewDate${new Date()}`);
     // Check if the reset token has expired
     if (user.resetPasswordExpires && user.resetPasswordExpires <= new Date()) {
-      console.log("Inside");
       return res.status(400).json({ message: "Reset token has expired" });
     }
 
@@ -121,7 +118,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     res.json({ message: "Password reset successfully" });
   } catch (error) {
-    console.error("Error resetting password:", error);
+    Logger.error("Error resetting password:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };

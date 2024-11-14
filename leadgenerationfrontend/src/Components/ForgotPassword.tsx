@@ -60,15 +60,18 @@ export const ForgotPassword: React.FC = () => {
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     try {
-      const response = await axios.post(ENDPOINTS.forgotPassword, {
-        email: data.email,
-      },{
-        withCredentials:true,
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.post(
+        ENDPOINTS.forgotPassword,
+        {
+          email: data.email,
         },
-      });
-      console.log('response', response.data);
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.status === 200) {
         toast({
           title: 'Mail Sent.',
@@ -82,7 +85,6 @@ export const ForgotPassword: React.FC = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('An unexpected error occurred', error.response?.status);
         let status: number | undefined = error.response?.status;
         let message: string = error.response?.data.message;
         if (error.response?.status === status) {

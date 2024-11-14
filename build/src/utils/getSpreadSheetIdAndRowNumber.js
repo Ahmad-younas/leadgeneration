@@ -28,7 +28,7 @@ const getSpreadSheetIdAndRowNumber = async (jobId, userId) => {
         };
     }
     catch (error) {
-        console.error("Error fetching spreadsheet ID and row number:", error);
+        logger_1.default.error("Error", error);
         throw new Error("Could not retrieve spreadsheet information.");
     }
 };

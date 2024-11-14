@@ -30,7 +30,7 @@ export const getSpreadSheetIdAndRowNumber = async (
       googleTokens,
     };
   } catch (error) {
-    console.error("Error fetching spreadsheet ID and row number:", error);
+    Logger.error("Error", error);
     throw new Error("Could not retrieve spreadsheet information.");
   }
 };

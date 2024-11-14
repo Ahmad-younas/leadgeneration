@@ -23,6 +23,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from 'redux/store';
 import { logout } from '../../../../../redux/authSlice';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
 
 interface FormData {
   name: string;
@@ -52,7 +53,11 @@ const schema = yup.object().shape({
   id: yup.string().required('Id is required'),
 });
 
-export const Model: React.FC<AuthModalProps> = ({ isOpenModel, onCloseModel, data, }) => {
+export const Model: React.FC<AuthModalProps> = ({
+  isOpenModel,
+  onCloseModel,
+  data,
+}) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -67,7 +72,7 @@ export const Model: React.FC<AuthModalProps> = ({ isOpenModel, onCloseModel, dat
   const onSubmit = async (data: FormData) => {
     try {
       const response = await axios.patch(
-        'http://localhost:3002/api/updateEmployee',
+        ENDPOINTS.updateEmployee,
         {
           email: data.email,
           name: data.name,

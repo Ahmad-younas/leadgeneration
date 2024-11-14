@@ -2,6 +2,7 @@ import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { lineChartOptions } from '../../../../../general';
 import axios from 'axios';
+import { ENDPOINTS } from '../../../../../utils/apiConfig';
 
 // Define the types for the state
 interface LineChartState {
@@ -26,16 +27,13 @@ export class LineChart extends React.Component<{}, LineChartState> {
   async componentDidMount() {
     const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.get(
-        'http://localhost:3002/api/get-monthly-count-job',
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(ENDPOINTS.getMonthlyCountJob, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const jobCounts = response.data.map(
         (item: JobCount) => item.total_jobs_on_each_month
       );

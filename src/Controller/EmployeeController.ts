@@ -279,8 +279,7 @@ export const addLeads = async (req: CustomRequest, res: Response) => {
     });
   } catch (err) {
     if (err instanceof Error) {
-      console.log("error", err);
-      logger.error(err.message);
+      logger.error("Error", err.message);
     }
     res.status(500).json({ message: "Error adding job", error: err });
   }
@@ -338,7 +337,7 @@ export const getJobInfoOfEmployee = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    Logger.error("Error fetching employee with job info:", error);
     res.status(500).json({
       message: "Failed to fetch employee with job information",
       error: error,
@@ -402,7 +401,7 @@ export const getJobInfoOfEmployeeWithPagination = async (
       },
     });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    Logger.error("Error fetching employee with job info:", error);
     res.status(500).json({
       message: "Failed to fetch employee with job information",
       error: error,
@@ -432,7 +431,7 @@ export const getIndividualEmployeeWithJobInfo = async (
       employeeJobInfo,
     });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    Logger.error("Error fetching employee with job info:", error);
     res.status(500).json({
       message: "Failed to fetch employee with job information",
       error: error,
@@ -478,7 +477,7 @@ export const getMonthlyJobCountOfEmployee = async (
 
     res.status(200).json(monthlyJobCounts);
   } catch (error) {
-    console.error("Error fetching monthly job count:", error);
+    Logger.error("Error fetching monthly job count:", error);
     res.status(500).json({
       message: "Failed to fetch monthly job count",
       error: error,
@@ -514,7 +513,7 @@ export const getStatusCountOfJobs = async (req: Request, res: Response) => {
     // Send the result as a response
     res.status(200).json(monthlyJobCounts);
   } catch (error) {
-    console.error("Error fetching monthly job count:", error);
+    Logger.error("Error fetching monthly job count:", error);
     res.status(500).json({
       message: "Failed to fetch monthly job count",
       error: error,
@@ -541,7 +540,7 @@ export const getEmployeeJobs = async (req: Request, res: Response) => {
     res.status(200).json(employeeJobs);
   } catch (error) {
     // Handle any errors during the fetch
-    console.error("Error fetching employee jobs:", error);
+    Logger.error("Error fetching employee jobs:", error);
     res.status(500).json({
       message: "An error occurred while fetching employee jobs.",
       error,
@@ -561,7 +560,7 @@ export const getJobStatusById = async (req: CustomRequest, res: Response) => {
     });
     res.status(200).json({ usersWithJobs });
   } catch (error) {
-    console.error("Error fetching employee with job info:", error);
+    Logger.error("Error fetching employee with job info:", error);
     res.status(500).json({
       message: "Failed to fetch employee with job information",
       error: error,

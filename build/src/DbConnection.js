@@ -10,12 +10,6 @@ const logger_1 = __importDefault(require("./logger"));
 dotenv_1.default.config({ path: ".env" });
 const isProduction = process.env.NODE_ENV === "production";
 logger_1.default.info(`Application is running in ${process.env.NODE_ENV || "development"} mode`);
-logger_1.default.info(`Database Configuration: {
-  Database: ${isProduction ? process.env.PROD_DB_NAME : process.env.DEV_DB_NAME},
-  Username: ${isProduction ? process.env.PROD_DB_USER : process.env.DEV_DB_USER},
-  Host: ${isProduction ? process.env.PROD_DB_HOST : process.env.DEV_DB_HOST},
-  Port: ${isProduction ? process.env.PROD_DB_PORT : process.env.DEV_DB_PORT}
-}`);
 const sequelize = new sequelize_typescript_1.Sequelize({
     database: isProduction ? process.env.PROD_DB_NAME : process.env.DEV_DB_NAME,
     username: isProduction ? process.env.PROD_DB_USER : process.env.DEV_DB_USER,

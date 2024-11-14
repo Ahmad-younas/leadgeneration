@@ -25,7 +25,6 @@ export const Calendar: React.FC = () => {
   const secondaryText = useColorModeValue('gray.700', 'white');
   const dispatch = useDispatch();
   const [events, setEvents] = useState<Event[]>([]);
-  console.log('events', events);
   const token = localStorage.getItem('authToken');
   useEffect(() => {
     const fetchEvents = async () => {
@@ -40,7 +39,6 @@ export const Calendar: React.FC = () => {
           }
         ); // Adjust the URL and ID as needed
         const usersWithJobs = response.data;
-        console.log('data', usersWithJobs);
         const mappedEvents = Array.isArray(usersWithJobs)
           ? usersWithJobs.map(
               (job: {
@@ -62,8 +60,6 @@ export const Calendar: React.FC = () => {
                 id: usersWithJobs.id,
               },
             ];
-
-        console.log('mappedEvent', mappedEvents);
         setEvents(mappedEvents);
       } catch (error) {
         if (axios.isAxiosError(error)) {

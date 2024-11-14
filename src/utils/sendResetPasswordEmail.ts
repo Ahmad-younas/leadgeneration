@@ -2,7 +2,6 @@ import nodemailer from "nodemailer";
 import logger from "../logger";
 import Logger from "../logger"; // Adjust this import according to your logger setup
 
-// Nodemailer transport configuration
 const transporter = nodemailer.createTransport({
   service: "Gmail", // e.g., 'Gmail', 'Yahoo', 'Outlook'
   auth: {

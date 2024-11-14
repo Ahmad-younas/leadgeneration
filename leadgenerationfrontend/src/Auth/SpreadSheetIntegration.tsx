@@ -30,8 +30,7 @@ const SpreadSheetIntegration: React.FC = () => {
         ) {
           dispatch(logout());
         }
-        console.error(
-          'Error generating authorization URL:',
+        console.error('Error generating authorization URL:',
           error.response?.data || error.message
         );
       } else {

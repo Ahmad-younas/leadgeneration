@@ -20,7 +20,6 @@ export const getAuthUrl = (req: Request, res: Response) => {
     redirect_uri: process.env.REDIRECT_URI,
     client_id: process.env.GOOGLE_CLIENT_ID,
   });
-  console.log("authURL", authUrl);
   res.json({ url: authUrl });
 };
 
@@ -30,7 +29,6 @@ export const oauth2Callback = async (
 ): Promise<void> => {
   Logger.info("Get oauth2Callback function is called");
   const { code } = req.body;
-  console.log("Code", code);
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = process.env.REDIRECT_URI;
@@ -73,7 +71,6 @@ export const oauth2Callback = async (
     res.status(200).json("Google Token Successfully Stored in the Database");
   } catch (error) {
     Logger.error(`Error during OAuth2 callback: ${error}`);
-    console.error("Error during OAuth2 callback:", error);
     res.status(500).send("Authentication failed");
   }
 };

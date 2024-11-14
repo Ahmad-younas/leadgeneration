@@ -59,7 +59,6 @@ export const SignIn: React.FC = () => {
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     try {
-      console.log('ENDPOINTS', ENDPOINTS.login);
       const response = await axios.post(
         ENDPOINTS.login,
         {
