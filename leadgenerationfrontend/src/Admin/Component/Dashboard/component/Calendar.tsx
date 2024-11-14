@@ -10,6 +10,7 @@ import { ConfigureCalendar } from './ConfigureCalendar';
 import axios from 'axios';
 import { logout } from '../../../../redux/authSlice';
 import { useDispatch } from 'react-redux';
+import { ENDPOINTS } from '../../../../utils/apiConfig';
 
 interface Event {
   start: Date;
@@ -29,15 +30,12 @@ export const Calendar: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(
-          'http://localhost:3002/api/getAllJobStatus',
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ); // Adjust the URL and ID as needed
+        const response = await axios.get(ENDPOINTS.getAllJobStatus, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }); // Adjust the URL and ID as needed
         const usersWithJobs = response.data;
         const mappedEvents = Array.isArray(usersWithJobs)
           ? usersWithJobs.map(
